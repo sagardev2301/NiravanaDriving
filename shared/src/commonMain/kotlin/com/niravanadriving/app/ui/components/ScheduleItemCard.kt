@@ -75,7 +75,7 @@ fun ScheduleItemCard(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "${lesson.scheduledTime} - 09:00 AM", // Mock end time
+                                text = "${com.niravanadriving.app.util.DateTimeUtils.formatTime(lesson.scheduledTime)} - ${com.niravanadriving.app.util.DateTimeUtils.calculateEndTime(lesson.scheduledTime, lesson.durationMinutes)}",
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Medium
                             )

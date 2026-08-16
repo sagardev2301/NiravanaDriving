@@ -25,6 +25,7 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +40,7 @@ fun AddLearnerScreen(onBack: () -> Unit) {
 
     // Package Details State
     var totalClasses by remember { mutableStateOf("15") }
-    var startDate by remember { mutableStateOf("2023-10-24") } // Default date
+    var startDate by remember { mutableStateOf(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()) }
     var pickupAddress by remember { mutableStateOf("") }
 
     // Financial Details State
@@ -256,7 +257,7 @@ fun AddLearnerScreen(onBack: () -> Unit) {
                                         amount = advance,
                                         paymentMethod = PaymentMethod.CASH, // Default to cash for now
                                         status = PaymentStatus.PAID,
-                                        paidAt = "2023-10-24T10:00:00Z", // Placeholder
+                                        paidAt = Clock.System.now().toString(),
                                         notes = "Initial Advance",
                                         lessonId = null // This is the problematic field in your DB schema
                                     )

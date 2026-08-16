@@ -117,7 +117,7 @@ data class LessonSession(
 
 @Serializable
 data class Payment(
-    val id: String = "",
+    val id: String? = null,
     @SerialName("lesson_id") val lessonId: String? = null,
     @SerialName("student_id") val studentId: String,
     @SerialName("instructor_id") val instructorId: String,

@@ -15,18 +15,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.niravanadriving.app.data.repository.MockDataRepository
+import com.niravanadriving.app.data.models.Student
+import com.niravanadriving.app.data.repository.InstructorRepository
+import com.niravanadriving.app.data.repository.StudentRepository
 import com.niravanadriving.app.ui.components.LearnerCard
+import com.niravanadriving.app.ui.util.UiState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LearnerScreen(onAddLearner: () -> Unit) {
-    val students = MockDataRepository.getAllStudents()
+    var uiState by remember { mutableStateOf<UiState<List<Student>>>(UiState.Loading) }
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("Active (12)") }
+    var selectedFilter by remember { mutableStateOf("Active") }
     
-    val filters = listOf("Active (12)", "Payment Pending (4)", "Completed")
+    val scope = rememberCoroutineScope()
+
+    fun loadData() {
+        uiState = UiState.Loading
+        scope.launch {
+            try {
+                val instructor = InstructorRepository.getCurrentInstructor()
+                if (instructor == null) {
+                    uiState = UiState.Error("Instructor not found")
+                    return@launch
+                }
+                val students = StudentRepository.getAllStudents(instructor.id)
+                uiState = UiState.Success(students)
+            } catch (e: Exception) {
+                uiState = UiState.Error(e.message ?: "Error loading learners")
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        loadData()
+    }
 
     Scaffold(
         topBar = {
@@ -37,9 +61,7 @@ fun LearnerScreen(onAddLearner: () -> Unit) {
                             modifier = Modifier.size(32.dp),
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-                            // Avatar placeholder
-                        }
+                        ) { /* Avatar */ }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
@@ -47,11 +69,13 @@ fun LearnerScreen(onAddLearner: () -> Unit) {
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
-                            Text(
-                                text = "Total: 24",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            if (uiState is UiState.Success) {
+                                Text(
+                                    text = "Total: ${(uiState as UiState.Success).data.size}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 },
@@ -73,70 +97,114 @@ fun LearnerScreen(onAddLearner: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Search by name, phone, or ID...", style = MaterialTheme.typography.bodyMedium) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
-                shape = CircleShape,
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary
-                ),
-                singleLine = true
-            )
-            
-            // Filters
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                filters.forEach { filter ->
-                    val isSelected = filter == selectedFilter
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { selectedFilter = filter },
-                        label = { Text(filter) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White,
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        border = null,
-                        shape = CircleShape
-                    )
+        when (val state = uiState) {
+            is UiState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
-            
-            // Learner List
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(students.filter { it.fullName.contains(searchQuery, ignoreCase = true) }) { student ->
-                    LearnerCard(
-                        student = student,
-                        onCall = { /* Call */ },
-                        onMessage = { /* Message */ },
-                        onLocation = { /* Location */ }
+            is UiState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(state.message, color = MaterialTheme.colorScheme.error)
+                        Button(onClick = { loadData() }, modifier = Modifier.padding(top = 16.dp)) {
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
+            is UiState.Success -> {
+                val allStudents = state.data
+                
+                // Dynamic Filter Calculations
+                val activeCount = allStudents.count { it.isActive }
+                val pendingCount = allStudents.count { it.balance > 0 }
+                val completedCount = allStudents.count { it.sessionsCompleted >= (it.totalSessions ?: 15) }
+
+                val filters = listOf(
+                    "Active ($activeCount)",
+                    "Payment Pending ($pendingCount)",
+                    "Completed ($completedCount)"
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    // Search Bar
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        placeholder = { Text("Search by name, phone, or ID...", style = MaterialTheme.typography.bodyMedium) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        shape = CircleShape,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary
+                        ),
+                        singleLine = true
                     )
+                    
+                    // Filters
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        filters.forEach { filter ->
+                            val filterName = filter.substringBefore(" (")
+                            val isSelected = selectedFilter == filterName
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { selectedFilter = filterName },
+                                label = { Text(filter) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = Color.White,
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                border = null,
+                                shape = CircleShape
+                            )
+                        }
+                    }
+                    
+                    // Learner List
+                    val filteredStudents = allStudents.filter { student ->
+                        val matchesSearch = student.fullName.contains(searchQuery, ignoreCase = true)
+                        val matchesFilter = when (selectedFilter) {
+                            "Active" -> student.isActive
+                            "Payment Pending" -> student.balance > 0
+                            "Completed" -> student.sessionsCompleted >= (student.totalSessions ?: 15)
+                            else -> true
+                        }
+                        matchesSearch && matchesFilter
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
+                    ) {
+                        items(filteredStudents) { student ->
+                            LearnerCard(
+                                student = student,
+                                onCall = { /* Call */ },
+                                onMessage = { /* Message */ },
+                                onLocation = { /* Location */ }
+                            )
+                        }
+                    }
                 }
             }
         }
