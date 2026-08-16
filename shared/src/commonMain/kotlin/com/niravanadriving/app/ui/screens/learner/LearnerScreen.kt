@@ -15,42 +15,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.niravanadriving.app.data.models.Student
-import com.niravanadriving.app.data.repository.InstructorRepository
-import com.niravanadriving.app.data.repository.StudentRepository
 import com.niravanadriving.app.ui.components.LearnerCard
 import com.niravanadriving.app.ui.util.UiState
+import com.niravanadriving.app.ui.viewmodel.LearnerViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LearnerScreen(onAddLearner: () -> Unit) {
-    var uiState by remember { mutableStateOf<UiState<List<Student>>>(UiState.Loading) }
+fun LearnerScreen(viewModel: LearnerViewModel, onAddLearner: () -> Unit) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Active") }
-    
-    val scope = rememberCoroutineScope()
-
-    fun loadData() {
-        uiState = UiState.Loading
-        scope.launch {
-            try {
-                val instructor = InstructorRepository.getCurrentInstructor()
-                if (instructor == null) {
-                    uiState = UiState.Error("Instructor not found")
-                    return@launch
-                }
-                val students = StudentRepository.getAllStudents(instructor.id)
-                uiState = UiState.Success(students)
-            } catch (e: Exception) {
-                uiState = UiState.Error(e.message ?: "Error loading learners")
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        loadData()
-    }
 
     Scaffold(
         topBar = {
@@ -71,7 +48,7 @@ fun LearnerScreen(onAddLearner: () -> Unit) {
                             )
                             if (uiState is UiState.Success) {
                                 Text(
-                                    text = "Total: ${(uiState as UiState.Success).data.size}",
+                                    text = "Total: ${(uiState as UiState.Success<List<Student>>).data.size}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -80,7 +57,7 @@ fun LearnerScreen(onAddLearner: () -> Unit) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Search */ }) {
+                    IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                 }
@@ -107,7 +84,7 @@ fun LearnerScreen(onAddLearner: () -> Unit) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(state.message, color = MaterialTheme.colorScheme.error)
-                        Button(onClick = { loadData() }, modifier = Modifier.padding(top = 16.dp)) {
+                        Button(onClick = { viewModel.refresh() }, modifier = Modifier.padding(top = 16.dp)) {
                             Text("Retry")
                         }
                     }
@@ -196,7 +173,7 @@ fun LearnerScreen(onAddLearner: () -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
-                        items(filteredStudents) { student ->
+                        items(filteredStudents, key = { it.id!! }) { student ->
                             LearnerCard(
                                 student = student,
                                 onCall = { /* Call */ },

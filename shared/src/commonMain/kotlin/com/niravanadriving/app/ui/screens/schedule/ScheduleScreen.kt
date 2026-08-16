@@ -14,53 +14,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.niravanadriving.app.data.models.Lesson
-import com.niravanadriving.app.data.repository.InstructorRepository
-import com.niravanadriving.app.data.repository.LessonRepository
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.niravanadriving.app.ui.components.ScheduleItemCard
 import com.niravanadriving.app.ui.util.UiState
+import com.niravanadriving.app.ui.viewmodel.ScheduleViewModel
 import kotlinx.coroutines.launch
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen() {
-    var uiState by remember { mutableStateOf<UiState<Unit>>(UiState.Loading) }
-    var lessons by remember { mutableStateOf<List<Lesson>>(emptyList()) }
+fun ScheduleScreen(viewModel: ScheduleViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lessons by viewModel.lessons.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     
-    val tomorrow = remember {
-        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.plus(1, DateTimeUnit.DAY)
-    }
-
-    fun loadData() {
-        uiState = UiState.Loading
-        scope.launch {
-            try {
-                val instructor = InstructorRepository.getCurrentInstructor()
-                if (instructor == null) {
-                    uiState = UiState.Error("Instructor not found")
-                    return@launch
-                }
-                val result = LessonRepository.getLessonsForDate(instructor.id, tomorrow)
-                lessons = result
-                uiState = UiState.Success(Unit)
-            } catch (e: Exception) {
-                uiState = UiState.Error(e.message ?: "Error loading schedule")
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        loadData()
-    }
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -82,7 +49,7 @@ fun ScheduleScreen() {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Search */ }) {
+                    IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                 }
@@ -99,14 +66,15 @@ fun ScheduleScreen() {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(state.message, color = MaterialTheme.colorScheme.error)
-                        Button(onClick = { loadData() }, modifier = Modifier.padding(top = 16.dp)) {
+                        Button(onClick = { viewModel.refresh() }, modifier = Modifier.padding(top = 16.dp)) {
                             Text("Retry")
                         }
                     }
                 }
             }
             is UiState.Success -> {
-                val tomorrowTitle = "Tomorrow, ${tomorrow.month.name.take(3)} ${tomorrow.dayOfMonth}"
+                val tomorrow = viewModel.tomorrow
+                val tomorrowTitle = "Tomorrow, ${tomorrow.month.name.take(3)} ${tomorrow.day}"
 
                 Column(
                     modifier = Modifier
@@ -119,7 +87,7 @@ fun ScheduleScreen() {
                             .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        item {
+                        item(key = "header") {
                             Spacer(modifier = Modifier.height(16.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
@@ -138,28 +106,17 @@ fun ScheduleScreen() {
                             Spacer(modifier = Modifier.height(24.dp))
                         }
 
-                        item {
+                        item(key = "auto-fill") {
                             Button(
                                 onClick = {
-                                    scope.launch {
-                                        val instructor = InstructorRepository.getCurrentInstructor()
-                                        if (instructor != null) {
-                                            val yesterdayLessons = LessonRepository.getYesterdayPublishedLessons(instructor.id)
-                                            if (yesterdayLessons.isEmpty()) {
-                                                snackbarHostState.showSnackbar("No published lessons from yesterday to fill.")
-                                            } else {
-                                                val newLessons = yesterdayLessons.map {
-                                                    it.copy(
-                                                        id = null,
-                                                        scheduledDate = tomorrow.toString(),
-                                                        isDraft = true
-                                                    )
-                                                }
-                                                lessons = lessons + newLessons
-                                                snackbarHostState.showSnackbar("Auto-filled from yesterday.")
-                                            }
+                                    viewModel.autoFillFromYesterday(
+                                        onNoLessons = {
+                                            scope.launch { snackbarHostState.showSnackbar("No published lessons from yesterday to fill.") }
+                                        },
+                                        onSuccess = {
+                                            scope.launch { snackbarHostState.showSnackbar("Auto-filled from yesterday.") }
                                         }
-                                    }
+                                    )
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
@@ -182,25 +139,17 @@ fun ScheduleScreen() {
                             Spacer(modifier = Modifier.height(16.dp))
                         }
 
-                        itemsIndexed(lessons) { index, lesson ->
+                        itemsIndexed(lessons, key = { _, lesson -> lesson.id ?: lesson.hashCode() }) { index, lesson ->
                             ScheduleItemCard(
                                 lesson = lesson,
                                 onRemove = {
-                                    scope.launch {
-                                        val id = lesson.id
-                                        if (id != null) {
-                                            if (LessonRepository.deleteLesson(id)) {
-                                                lessons = lessons.filter { it.id != id }
-                                            } else {
-                                                snackbarHostState.showSnackbar("Failed to delete lesson.")
-                                            }
-                                        } else {
-                                            // Local draft, just remove from list
-                                            // Since id is null, we might need another way to identify, 
-                                            // but for now let's assume we can filter by reference if they are the same object.
-                                            lessons = lessons.filterIndexed { i, _ -> i != index }
+                                    viewModel.removeLesson(
+                                        index = index,
+                                        lesson = lesson,
+                                        onError = { error ->
+                                            scope.launch { snackbarHostState.showSnackbar(error) }
                                         }
-                                    }
+                                    )
                                 }
                             )
                             
@@ -227,12 +176,9 @@ fun ScheduleScreen() {
                         ) {
                             OutlinedButton(
                                 onClick = {
-                                    scope.launch {
-                                        if (LessonRepository.saveDraftLessons(lessons)) {
-                                            snackbarHostState.showSnackbar("Draft saved.")
-                                            loadData() // Reload to get fresh IDs from DB
-                                        } else {
-                                            snackbarHostState.showSnackbar("Failed to save draft.")
+                                    viewModel.saveDraft { success ->
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(if (success) "Draft saved." else "Failed to save draft.")
                                         }
                                     }
                                 },
@@ -247,21 +193,9 @@ fun ScheduleScreen() {
                             
                             Button(
                                 onClick = {
-                                    scope.launch {
-                                        val instructor = InstructorRepository.getCurrentInstructor()
-                                        if (instructor != null) {
-                                            // First save any unsaved local changes as drafts
-                                            if (LessonRepository.saveDraftLessons(lessons)) {
-                                                if (LessonRepository.publishLessonsForDate(instructor.id, tomorrow)) {
-                                                    // TODO: trigger notification
-                                                    snackbarHostState.showSnackbar("Schedule published successfully.")
-                                                    loadData() // Refresh UI
-                                                } else {
-                                                    snackbarHostState.showSnackbar("Failed to publish schedule.")
-                                                }
-                                            } else {
-                                                snackbarHostState.showSnackbar("Failed to save state before publishing.")
-                                            }
+                                    viewModel.publish { success ->
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(if (success) "Schedule published successfully." else "Failed to publish schedule.")
                                         }
                                     }
                                 },

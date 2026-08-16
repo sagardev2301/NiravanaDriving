@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -28,6 +29,9 @@ import com.niravanadriving.app.ui.screens.learner.LearnerScreen
 import com.niravanadriving.app.ui.screens.login.LoginScreen
 import com.niravanadriving.app.ui.screens.profile.ProfileScreen
 import com.niravanadriving.app.ui.screens.schedule.ScheduleScreen
+import com.niravanadriving.app.ui.viewmodel.HomeViewModel
+import com.niravanadriving.app.ui.viewmodel.ScheduleViewModel
+import com.niravanadriving.app.ui.viewmodel.LearnerViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -93,13 +97,16 @@ fun AppNavigation() {
                 )
             }
             composable<HomeRoute> {
-                HomeScreen()
+                val viewModel: HomeViewModel = viewModel { HomeViewModel() }
+                HomeScreen(viewModel)
             }
             composable<ScheduleRoute> {
-                ScheduleScreen()
+                val viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }
+                ScheduleScreen(viewModel)
             }
             composable<LearnerRoute> {
-                LearnerScreen(onAddLearner = { navController.navigate(AddLearnerRoute) })
+                val viewModel: LearnerViewModel = viewModel { LearnerViewModel() }
+                LearnerScreen(viewModel, onAddLearner = { navController.navigate(AddLearnerRoute) })
             }
             composable<ProfileRoute> {
                 ProfileScreen()
