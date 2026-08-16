@@ -9,6 +9,7 @@ import com.niravanadriving.app.data.repository.InstructorRepository
 import com.niravanadriving.app.data.repository.LessonRepository
 import com.niravanadriving.app.ui.util.UiState
 import com.niravanadriving.app.data.supabase
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.RealtimeChannel
 import io.github.jan.supabase.realtime.channel
@@ -36,7 +37,14 @@ class HomeViewModel : ViewModel() {
     private var sessionsChannel: RealtimeChannel? = null
 
     init {
-        loadData(isRefresh = false)
+        // Observe session status and trigger fetch when logged in
+        supabase.auth.sessionStatus
+            .onEach { status ->
+                if (status is io.github.jan.supabase.auth.status.SessionStatus.Authenticated) {
+                    loadData(isRefresh = false)
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun refresh() {
@@ -93,12 +101,13 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override fun onCleared() {
-        lessonsChannel?.let { 
-            viewModelScope.launch { it.unsubscribe() }
+        lessonsChannel?.let {
+            kotlinx.coroutines.GlobalScope.launch { it.unsubscribe() }
         }
         sessionsChannel?.let {
-            viewModelScope.launch { it.unsubscribe() }
+            kotlinx.coroutines.GlobalScope.launch { it.unsubscribe() }
         }
     }
 }

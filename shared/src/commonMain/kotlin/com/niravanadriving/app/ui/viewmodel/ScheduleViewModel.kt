@@ -7,6 +7,7 @@ import com.niravanadriving.app.data.repository.InstructorRepository
 import com.niravanadriving.app.data.repository.LessonRepository
 import com.niravanadriving.app.ui.util.UiState
 import com.niravanadriving.app.data.supabase
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.RealtimeChannel
 import io.github.jan.supabase.realtime.channel
@@ -37,7 +38,14 @@ class ScheduleViewModel : ViewModel() {
     val tomorrow = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.plus(1, DateTimeUnit.DAY)
 
     init {
-        loadData(isRefresh = false)
+        // Observe session status and trigger fetch when logged in
+        supabase.auth.sessionStatus
+            .onEach { status ->
+                if (status is io.github.jan.supabase.auth.status.SessionStatus.Authenticated) {
+                    loadData(isRefresh = false)
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun refresh() {
@@ -57,7 +65,7 @@ class ScheduleViewModel : ViewModel() {
                 }
                 _lessons.value = LessonRepository.getLessonsForDate(instructor.id, tomorrow)
                 _uiState.value = UiState.Success(Unit)
-                
+
                 subscribeToRealtime(instructor.id)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Error loading schedule")
@@ -69,11 +77,11 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch {
             lessonsChannel?.unsubscribe()
             lessonsChannel = supabase.realtime.channel("schedule-changes-$instructorId")
-            
+
             lessonsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "lessons"
                 filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
-            }?.onEach { 
+            }?.onEach {
                 loadData(isRefresh = true)
             }?.launchIn(viewModelScope)
 
@@ -146,9 +154,10 @@ class ScheduleViewModel : ViewModel() {
         }
     }
 
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override fun onCleared() {
-        lessonsChannel?.let { 
-            viewModelScope.launch { it.unsubscribe() }
+        lessonsChannel?.let {
+            kotlinx.coroutines.GlobalScope.launch { it.unsubscribe() }
         }
     }
 }

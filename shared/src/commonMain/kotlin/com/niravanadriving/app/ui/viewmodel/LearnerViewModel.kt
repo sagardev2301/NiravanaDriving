@@ -7,6 +7,7 @@ import com.niravanadriving.app.data.repository.InstructorRepository
 import com.niravanadriving.app.data.repository.StudentRepository
 import com.niravanadriving.app.ui.util.UiState
 import com.niravanadriving.app.data.supabase
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.RealtimeChannel
 import io.github.jan.supabase.realtime.channel
@@ -28,7 +29,14 @@ class LearnerViewModel : ViewModel() {
     private var paymentsChannel: RealtimeChannel? = null
 
     init {
-        loadData(isRefresh = false)
+        // Observe session status and trigger fetch when logged in
+        supabase.auth.sessionStatus
+            .onEach { status ->
+                if (status is io.github.jan.supabase.auth.status.SessionStatus.Authenticated) {
+                    loadData(isRefresh = false)
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun refresh() {
@@ -48,7 +56,7 @@ class LearnerViewModel : ViewModel() {
                 }
                 val students = StudentRepository.getAllStudents(instructor.id)
                 _uiState.value = UiState.Success(students)
-                
+
                 subscribeToRealtime(instructor.id)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Error loading learners")
@@ -60,11 +68,11 @@ class LearnerViewModel : ViewModel() {
         viewModelScope.launch {
             studentsChannel?.unsubscribe()
             studentsChannel = supabase.realtime.channel("students-changes-$instructorId")
-            
+
             studentsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "students"
                 filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
-            }?.onEach { 
+            }?.onEach {
                 loadData(isRefresh = true)
             }?.launchIn(viewModelScope)
 
@@ -73,7 +81,7 @@ class LearnerViewModel : ViewModel() {
             paymentsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "payments"
                 filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
-            }?.onEach { 
+            }?.onEach {
                 loadData(isRefresh = true)
             }?.launchIn(viewModelScope)
 
@@ -82,12 +90,13 @@ class LearnerViewModel : ViewModel() {
         }
     }
 
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override fun onCleared() {
-        studentsChannel?.let { 
-            viewModelScope.launch { it.unsubscribe() }
+        studentsChannel?.let {
+            kotlinx.coroutines.GlobalScope.launch { it.unsubscribe() }
         }
         paymentsChannel?.let {
-            viewModelScope.launch { it.unsubscribe() }
+            kotlinx.coroutines.GlobalScope.launch { it.unsubscribe() }
         }
     }
 }

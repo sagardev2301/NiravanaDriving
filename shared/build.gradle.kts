@@ -61,7 +61,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
-            implementation("io.ktor:ktor-client-android:3.4.3")
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -79,7 +79,8 @@ kotlin {
             implementation("io.github.jan-tennert.supabase:postgrest-kt")
             implementation("io.github.jan-tennert.supabase:auth-kt")
             implementation("io.github.jan-tennert.supabase:realtime-kt")
-            implementation("io.ktor:ktor-client-core:3.4.3")
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.websockets)
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
             implementation(libs.kotlinx.datetime)
         }

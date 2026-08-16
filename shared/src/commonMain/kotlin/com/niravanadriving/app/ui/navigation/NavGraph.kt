@@ -71,6 +71,11 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    // Initialize ViewModels once at the AppNavigation level to ensure they persist across tab switches
+    val homeViewModel: HomeViewModel = viewModel { HomeViewModel() }
+    val scheduleViewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }
+    val learnerViewModel: LearnerViewModel = viewModel { LearnerViewModel() }
+
     val showBottomBar = currentDestination?.hierarchy?.any { dest ->
         TOP_LEVEL_DESTINATIONS.any { dest.hasRoute(it.route::class) }
     } == true
@@ -97,16 +102,13 @@ fun AppNavigation() {
                 )
             }
             composable<HomeRoute> {
-                val viewModel: HomeViewModel = viewModel { HomeViewModel() }
-                HomeScreen(viewModel)
+                HomeScreen(homeViewModel)
             }
             composable<ScheduleRoute> {
-                val viewModel: ScheduleViewModel = viewModel { ScheduleViewModel() }
-                ScheduleScreen(viewModel)
+                ScheduleScreen(scheduleViewModel)
             }
             composable<LearnerRoute> {
-                val viewModel: LearnerViewModel = viewModel { LearnerViewModel() }
-                LearnerScreen(viewModel, onAddLearner = { navController.navigate(AddLearnerRoute) })
+                LearnerScreen(learnerViewModel, onAddLearner = { navController.navigate(AddLearnerRoute) })
             }
             composable<ProfileRoute> {
                 ProfileScreen()
