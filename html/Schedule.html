@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NirvanaDrive - Schedule Planner</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#cbbeff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffba3b",
+                        "on-primary-container": "#ded4ff",
+                        "tertiary-fixed": "#e7deff",
+                        "surface-container-highest": "#e6e1e4",
+                        "on-secondary-fixed-variant": "#604100",
+                        "secondary": "#7f5700",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#644ac0",
+                        "primary": "#4c22bd",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ebe7e9",
+                        "surface-variant": "#e6e1e4",
+                        "primary-fixed": "#e7deff",
+                        "surface-container": "#f1edef",
+                        "outline": "#797586",
+                        "outline-variant": "#cac4d7",
+                        "surface-dim": "#ddd9db",
+                        "secondary-container": "#feb316",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f4eff2",
+                        "on-secondary-container": "#6a4800",
+                        "tertiary-fixed-dim": "#ccbeff",
+                        "on-surface": "#1c1b1d",
+                        "on-tertiary-fixed-variant": "#4b2ea6",
+                        "surface-tint": "#6341d5",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#cbbeff",
+                        "on-tertiary-fixed": "#1e0060",
+                        "surface": "#fdf8fb",
+                        "on-secondary-fixed": "#281900",
+                        "primary-container": "#6442d6",
+                        "caution": "#F2A900",
+                        "background": "#FEFBFF",
+                        "on-primary-fixed-variant": "#4b21bd",
+                        "inverse-surface": "#313032",
+                        "on-tertiary-container": "#ded4ff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#1e0061",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fdf8fb",
+                        "success": "#2E7D32",
+                        "surface-container-low": "#f7f2f5",
+                        "secondary-fixed": "#ffdead",
+                        "tertiary": "#4c2fa6",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#484554",
+                        "on-background": "#1c1b1d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max-width": "1200px",
+                        "margin-desktop": "24px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.25px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400" }],
+                        "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for horizontal lists to maintain clean M3 look */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen relative pb-[180px]">
+<!-- TopAppBar from JSON -->
+<header class="bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-margin-mobile h-16 w-full z-50 fixed top-0">
+    <div class="h-8 w-8 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+        <img class="w-full h-full object-cover" data-alt="A professional headshot of a driving instructor with a calm, reassuring smile, wearing a neat polo shirt. Soft studio lighting with a neutral gray background. High-quality corporate portrait photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPTc97OPE--_x8wtPtTECleYa9vbNg-UKDcNDb_Ggw4pYmCtsIpQbQdEaFmic0gEFfigmvOllEXXtBTTzBgf7G7fyKePYLlsuICnHoR_8iTbZAEN_WQFJD5L4TA30F0V-ae_klFAchkrptPYDvUzekM1YhM5ne8k76r86Txh0ML94pxW3roGURWyk5cZzs4DYR1I9YsY1dA6KQ6ORgOpSrrjubVZXeqRO1tuaOdzCxhg-uqwd-wGKI"/>
+    </div>
+    <h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed-dim truncate px-4">NirvanaDrive</h1>
+    <button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-variant dark:hover:bg-on-surface-variant/10 p-2 rounded-full transition-colors flex-shrink-0">
+        <span class="material-symbols-outlined">search</span>
+    </button>
+</header>
+<main class="pt-16">
+    <!-- Header -->
+    <section class="bg-surface pt-4 pb-4 border-b border-surface-variant px-margin-mobile flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[24px]">calendar_today</span>
+            <h2 class="font-title-lg text-title-lg text-on-surface font-semibold">Tomorrow, Oct 26</h2>
+        </div>
+    </section>
+    <!-- Auto-Fill Action -->
+    <div class="px-margin-mobile py-4 bg-background">
+        <button class="w-full bg-primary-container text-on-primary-container rounded-xl p-4 flex items-center justify-center gap-2 shadow-sm border border-primary/20 hover:bg-primary-container/90 transition-colors focus:ring-2 focus:ring-primary focus:outline-none">
+            <span class="text-[20px]">⚡</span>
+            <span class="font-label-lg text-label-lg font-bold">Auto-Fill from Today's Schedule</span>
+        </button>
+    </div>
+    <!-- Schedule List -->
+    <section class="px-margin-mobile pb-4 flex flex-col gap-3">
+        <!-- Learner Card 1 -->
+        <div class="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3 shadow-sm relative group hover:bg-surface-container-lowest transition-colors">
+            <div class="text-outline cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined">drag_indicator</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-2 min-w-0">
+                <div class="flex items-center gap-2">
+                    <button class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-low transition-colors text-on-surface font-label-md text-label-md">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                        08:00 - 09:00 AM
+                        <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                    </button>
+                    <span class="text-on-surface-variant font-label-md text-label-md opacity-70">(1 hr)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-tertiary-container flex-shrink-0">
+                        <img class="w-full h-full object-cover" data-alt="A portrait of a young female driving student, Sanya Khan, looking focused. Bright daylight, outdoors, modern aesthetic. High quality photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6wSMx7z0PQjH4p4d7PHK-otmQyBWCDQzWoGEkJUiLBbre7aX0Fpt1PDg1zDbZdgwciHuMSyamHpj2lnysEQGBQ6ABOT7naB8cHMARgQNa6qepBmwYeoRWk21bkpkJHxLs2d5w_VAK5qy9WghUHZ9Xc_zNFEMFLVJTa_O6II_YU-B84PxM6ZnUJ5lPUBDS1NONqW2cWdQAIouSFvtZ3yjFFKrVf1C6p_71nBQG4ErykgcVLCPZbUor"/>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="font-label-lg text-label-lg text-on-surface font-bold truncate">Sanya Khan</span>
+                        <span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1 truncate">
+<span class="material-symbols-outlined text-[14px] flex-shrink-0">location_on</span> City Dr, North
+</span>
+                    </div>
+                </div>
+            </div>
+            <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-error-container hover:text-on-error-container transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div><div class="flex items-center justify-center py-1">
+        <div class="flex items-center gap-3 w-full px-8">
+            <div class="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
+            <span class="text-on-surface-variant font-label-md text-label-md italic opacity-60">— 30 min buffer —</span>
+            <div class="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
+        </div>
+    </div>
+        <!-- Learner Card 2 -->
+        <div class="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3 shadow-sm relative group hover:bg-surface-container-lowest transition-colors">
+            <div class="text-outline cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined">drag_indicator</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-2 min-w-0">
+                <div class="flex items-center gap-2">
+                    <button class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-low transition-colors text-on-surface font-label-md text-label-md">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                        09:30 - 11:00 AM
+                        <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                    </button>
+                    <span class="text-on-surface-variant font-label-md text-label-md opacity-70">(1.5 hrs)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-primary-container flex-shrink-0">
+                        <img class="w-full h-full object-cover" data-alt="A portrait of a young male driving student, Vikram J., smiling slightly. Bright daylight, outdoors, modern aesthetic. High quality photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgOHgZFwqzka91qojptTQvV4xTZe3v3h66Yb9JB6CYavdKNuJ09RD1g6yDJxNIWfJpjWpw4Qz9zOkSSmlb_WMeusUkHooKGjG6-jyraSV9kXML88R8DPvgIUoNAr3O3qQVfb5sDEge4UZGpBhzbrR6gY2fj7i_lyUivsdsPD5gZCvUg2TBba2RD5kGy3aTgk9fUERzkmP60AVKjF_Jr34uDI2Zb83paWvT8jARMkvE993BRYfmhFQw"/>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="font-label-lg text-label-lg text-on-surface font-bold truncate">Vikram J.</span>
+                        <span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1 truncate">
+<span class="material-symbols-outlined text-[14px] flex-shrink-0">location_on</span> Hwy Pr, Downtown
+</span>
+                    </div>
+                </div>
+            </div>
+            <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-error-container hover:text-on-error-container transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div><div class="flex items-center justify-center py-1">
+        <div class="flex items-center gap-3 w-full px-8">
+            <div class="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
+            <span class="text-on-surface-variant font-label-md text-label-md italic opacity-60">— 30 min buffer —</span>
+            <div class="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
+        </div>
+    </div>
+        <!-- Learner Card 3 -->
+        <div class="bg-surface border border-outline-variant rounded-xl p-3 flex items-center gap-3 shadow-sm relative group hover:bg-surface-container-lowest transition-colors">
+            <div class="text-outline cursor-grab active:cursor-grabbing hover:text-on-surface transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined">drag_indicator</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-2 min-w-0">
+                <div class="flex items-center gap-2">
+                    <button class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-low transition-colors text-on-surface font-label-md text-label-md">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                        11:30 - 12:30 PM
+                        <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                    </button>
+                    <span class="text-on-surface-variant font-label-md text-label-md opacity-70">(1 hr)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-secondary-container flex-shrink-0">
+                        <img class="w-full h-full object-cover" data-alt="A portrait of a female driving student, Neha P., wearing glasses. Bright daylight, outdoors, modern aesthetic. High quality photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5GQQE9lHa00fnA_GEG-8_1V1ZDCKg36-ONjeOPoQ8rfxZoTZk3D3hRl67pzDtS3pI6ZOHeEQTLk0PH4ugsmM9y9HR6k4GbzRbCSijPHn_0XUYVYshr4iCOAebwZ98_jKJjljzI3uHM94pHXh9H22UQtf9RoO0xH0fD--7YPYqQEyML8glomBQHgcRmfvKhBzPQ94PZRQTMYGh3xKG48bueWqVTk_ddxTnY1qUTWkIt-3fW-k3eacI"/>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="font-label-lg text-label-lg text-on-surface font-bold truncate">Neha P.</span>
+                        <span class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1 truncate">
+<span class="material-symbols-outlined text-[14px] flex-shrink-0">location_on</span> Parallel P, Westside
+</span>
+                    </div>
+                </div>
+            </div>
+            <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-error-container hover:text-on-error-container transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+    </section>
+    <!-- Quick Add -->
+    <div class="px-margin-mobile pb-6">
+        <button class="w-full py-3 rounded-xl border-2 border-dashed border-outline-variant text-primary font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            + Add Extra Learner / Slot
+        </button>
+    </div>
+</main>
+<!-- Sticky Action Area -->
+<div class="fixed bottom-20 left-0 right-0 bg-surface/95 backdrop-blur-md px-margin-mobile py-4 flex flex-col gap-3 z-40 border-t border-surface-variant shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <button class="w-full py-3 px-4 rounded-full border border-primary text-primary font-label-lg text-label-lg hover:bg-primary/5 transition-colors text-center focus:ring-2 focus:ring-primary focus:outline-none">
+        Save Draft
+    </button>
+    <button class="w-full py-3 px-4 rounded-full bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:bg-primary/90 transition-colors text-center flex items-center justify-center gap-2 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none">
+        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">publish</span>
+        Publish &amp; Send Notifications (5 Classes)
+    </button>
+</div>
+<!-- BottomNavBar from JSON -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-2 pb-safe bg-surface-container dark:bg-surface-container-low shadow-[0_-1px_3px_0_rgba(0,0,0,0.1)] rounded-t-none">
+    <!-- Home -->
+    <button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg">
+        <span class="material-symbols-outlined mb-1">home</span>
+        <span class="font-label-md text-label-md">Home</span>
+    </button>
+    <!-- Schedule (Active) -->
+    <button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-5 py-1 scale-90 transition-all duration-200">
+        <span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+        <span class="font-label-md text-label-md">Schedule</span>
+    </button>
+    <!-- Learners -->
+    <button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg">
+        <span class="material-symbols-outlined mb-1">school</span>
+        <span class="font-label-md text-label-md">Learners</span>
+    </button>
+    <!-- Profile -->
+    <button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg">
+        <span class="material-symbols-outlined mb-1">person</span>
+        <span class="font-label-md text-label-md">Profile</span>
+    </button>
+</nav>
+</body></html>

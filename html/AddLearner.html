@@ -1,0 +1,314 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+    <title>Add New Learner - NirvanaDrive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e6e1e4",
+                        "on-secondary-fixed": "#281900",
+                        "inverse-primary": "#cbbeff",
+                        "surface-variant": "#F2ECEE",
+                        "on-surface-variant": "#484554",
+                        "primary-fixed-dim": "#cbbeff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1C1B1D",
+                        "tertiary": "#4c2fa6",
+                        "inverse-surface": "#313032",
+                        "on-tertiary-fixed-variant": "#4b2ea6",
+                        "surface-container-high": "#ebe7e9",
+                        "secondary": "#7f5700",
+                        "on-secondary-container": "#6a4800",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1c1b1d",
+                        "on-primary-fixed-variant": "#4b21bd",
+                        "secondary-container": "#feb316",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#ccbeff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "caution": "#F2A900",
+                        "surface-bright": "#fdf8fb",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#6341d5",
+                        "surface": "#fdf8fb",
+                        "secondary-fixed": "#ffdead",
+                        "surface-container-low": "#f7f2f5",
+                        "on-primary-fixed": "#1e0061",
+                        "outline": "#797586",
+                        "tertiary-container": "#644ac0",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#ded4ff",
+                        "background": "#FEFBFF",
+                        "primary-fixed": "#e7deff",
+                        "on-tertiary-container": "#ded4ff",
+                        "surface-container": "#f1edef",
+                        "outline-variant": "#cac4d7",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f4eff2",
+                        "on-secondary-fixed-variant": "#604100",
+                        "primary": "#4c22bd",
+                        "secondary-fixed-dim": "#ffba3b",
+                        "success": "#2E7D32",
+                        "surface-dim": "#ddd9db",
+                        "primary-container": "#6442d6",
+                        "tertiary-fixed": "#e7deff",
+                        "on-tertiary-fixed": "#1e0060"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "margin-desktop": "24px",
+                        "container-max-width": "1200px",
+                        "base": "8px",
+                        "gutter": "16px",
+                        "safe": "env(safe-area-inset-bottom)"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400" }],
+                        "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.25px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        /* Material 3 Filled Input Styling */
+        .m3-input-container {
+            position: relative;
+            background-color: theme('colors.surface-container-highest');
+            border-radius: 4px 4px 0 0;
+            border-bottom: 1px solid theme('colors.outline');
+            transition: border-bottom-color 0.2s ease, border-bottom-width 0.2s ease;
+        }
+        .m3-input-container:focus-within {
+            border-bottom: 2px solid theme('colors.primary');
+            padding-bottom: -1px; /* Compensate for thicker border */
+        }
+        .m3-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 24px 16px 8px 16px;
+            color: theme('colors.on-surface');
+            outline: none;
+            box-shadow: none !important; /* Override tailwind forms plugin */
+        }
+        .m3-input:focus {
+            outline: none;
+            box-shadow: none !important;
+        }
+        .m3-label {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            color: theme('colors.on-surface-variant');
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        .m3-input:focus ~ .m3-label,
+        .m3-input:not(:placeholder-shown) ~ .m3-label {
+            top: 6px;
+            font-size: 12px;
+            color: theme('colors.primary');
+        }
+        .m3-input:not(:focus):not(:placeholder-shown) ~ .m3-label {
+            color: theme('colors.on-surface-variant');
+        }
+
+        /* Hide scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg antialiased pb-24 md:pb-8">
+<!-- Top App Bar (Task-Focused: Minimal Header, No Full Global Nav) -->
+<header class="bg-surface flex items-center px-margin-mobile h-16 w-full z-50 sticky top-0">
+    <button class="p-2 -ml-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors flex items-center justify-center">
+        <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+    </button>
+    <h1 class="ml-4 font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Add New Learner</h1>
+</header>
+<main class="max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-gutter">
+    <form class="flex flex-col gap-8 max-w-2xl mx-auto">
+        <!-- Section 1: Basic Information -->
+        <section class="flex flex-col gap-gutter">
+            <h2 class="font-title-lg text-title-lg text-on-surface">Basic Information</h2>
+            <!-- Avatar Upload -->
+            <div class="flex justify-center mb-4">
+                <button class="relative group w-24 h-24 rounded-full bg-surface-container-highest border border-outline-variant flex flex-col items-center justify-center overflow-hidden hover:bg-surface-variant transition-colors shadow-sm" type="button">
+                    <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-1 group-hover:text-primary transition-colors">add_a_photo</span>
+                    <span class="font-label-md text-label-md text-on-surface-variant group-hover:text-primary transition-colors">Upload</span>
+                </button>
+            </div>
+            <!-- Fields -->
+            <div class="flex flex-col gap-4">
+                <div class="m3-input-container">
+                    <input class="m3-input font-body-lg" id="fullName" placeholder=" " type="text">
+                    <label class="m3-label font-body-lg" for="fullName">Full Name</label>
+                </div>
+                <div class="m3-input-container">
+                    <input class="m3-input font-body-lg" id="phoneNumber" placeholder=" " type="tel">
+                    <label class="m3-label font-body-lg" for="phoneNumber">Phone Number</label>
+                </div>
+                <div class="m3-input-container">
+                    <input class="m3-input font-body-lg" id="emergencyContact" placeholder=" " type="tel">
+                    <label class="m3-label font-body-lg" for="emergencyContact">Emergency Contact</label>
+                </div>
+            </div>
+        </section>
+        <!-- Section 2: Driving Package Details -->
+        <section class="flex flex-col gap-gutter">
+            <h2 class="font-title-lg text-title-lg text-on-surface">Driving Package Details</h2>
+            <div class="flex flex-col gap-4">
+                <div class="m3-input-container">
+                    <select class="m3-input font-body-lg appearance-none bg-transparent" id="totalClasses">
+                        <option disabled="" hidden="" selected="" value=""></option>
+                        <option value="10">10 Classes</option>
+                        <option value="15">15 Classes</option>
+                        <option value="20">20 Classes</option>
+                    </select>
+                    <label class="m3-label font-body-lg" for="totalClasses">Total Classes</label>
+                    <div class="absolute right-4 top-4 pointer-events-none text-on-surface-variant">
+                        <span class="material-symbols-outlined">arrow_drop_down</span>
+                    </div>
+                </div>
+                <div class="m3-input-container">
+                    <input class="m3-input font-body-lg" id="startDate" placeholder=" " type="date">
+                    <label class="m3-label font-body-lg" for="startDate">Start Date</label>
+                </div>
+                <div class="m3-input-container flex items-center pr-2">
+                    <div class="flex-grow relative">
+                        <input class="m3-input font-body-lg pr-12 bg-transparent border-none focus:ring-0" id="pickupAddress" placeholder=" " style="box-shadow: none;" type="text">
+                        <label class="m3-label font-body-lg" for="pickupAddress">Pickup Address</label>
+                    </div>
+                    <button class="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors flex items-center justify-center shrink-0" type="button">
+                        <span class="material-symbols-outlined">my_location</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- Section 3: Financial Details -->
+        <section class="flex flex-col gap-gutter mb-24">
+            <h2 class="font-title-lg text-title-lg text-on-surface">Financial Details</h2>
+            <div class="flex flex-col gap-4">
+                <div class="m3-input-container flex items-center">
+                    <span class="pl-4 text-on-surface-variant font-body-lg mt-4">₹</span>
+                    <input class="m3-input font-body-lg pl-2" id="packageFee" placeholder=" " type="number">
+                    <label class="m3-label font-body-lg ml-6" for="packageFee">Total Package Fee</label>
+                </div>
+                <div class="m3-input-container flex items-center">
+                    <span class="pl-4 text-on-surface-variant font-body-lg mt-4">₹</span>
+                    <input class="m3-input font-body-lg pl-2" id="advanceReceived" placeholder=" " type="number">
+                    <label class="m3-label font-body-lg ml-6" for="advanceReceived">Advance Received</label>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-surface-container rounded-lg border border-outline-variant/30 mt-2">
+                    <span class="font-body-lg text-on-surface">Payment Received Today</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input class="sr-only peer" type="checkbox" value="">
+                        <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-outline after:border-outline after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary peer-checked:after:bg-on-primary peer-checked:after:border-on-primary"></div>
+                    </label>
+                </div>
+            </div>
+        </section>
+        <!-- Bottom Action Area (Fixed) -->
+        <div class="fixed bottom-20 left-0 w-full px-margin-mobile pb-4 pt-4 bg-gradient-to-t from-background via-background to-transparent md:bottom-4 md:px-margin-desktop z-40">
+            <div class="max-w-2xl mx-auto">
+                <button class="w-full bg-primary text-on-primary font-label-lg text-label-lg h-12 rounded-full flex items-center justify-center hover:bg-primary/90 transition-colors shadow-md active:scale-[0.98]" type="button">
+                    Save &amp; Create Learner
+                </button>
+            </div>
+        </div>
+    </form>
+</main>
+<!-- BottomNavBar (Learners is Active based on context) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-2 pb-safe bg-surface-container shadow-[0_-1px_3px_0_rgba(0,0,0,0.1)] rounded-t-none">
+    <!-- Home (Inactive) -->
+    <a class="flex flex-col items-center justify-center text-on-surface-variant px-5 py-1 hover:bg-surface-container-high transition-colors rounded-full" href="#">
+        <span class="material-symbols-outlined text-[24px]">home</span>
+        <span class="font-label-md text-label-md mt-1">Home</span>
+    </a>
+    <!-- Schedule (Inactive) -->
+    <a class="flex flex-col items-center justify-center text-on-surface-variant px-5 py-1 hover:bg-surface-container-high transition-colors rounded-full" href="#">
+        <span class="material-symbols-outlined text-[24px]">calendar_month</span>
+        <span class="font-label-md text-label-md mt-1">Schedule</span>
+    </a>
+    <!-- Learners (Active) -->
+    <a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1 scale-90 transition-all duration-200" href="#">
+        <span class="material-symbols-outlined fill text-[24px]">school</span>
+        <span class="font-label-md text-label-md mt-1 font-bold">Learners</span>
+    </a>
+    <!-- Profile (Inactive) -->
+    <a class="flex flex-col items-center justify-center text-on-surface-variant px-5 py-1 hover:bg-surface-container-high transition-colors rounded-full" href="#">
+        <span class="material-symbols-outlined text-[24px]">person</span>
+        <span class="font-label-md text-label-md mt-1">Profile</span>
+    </a>
+</nav>
+<!-- Desktop Navigation Shell Simulation (Hidden on mobile) -->
+<div class="hidden md:flex flex-col fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-surface-container shadow-sm border-r border-outline-variant/20 pt-8 z-40">
+    <a class="flex items-center px-6 py-4 text-on-surface-variant hover:bg-surface-variant transition-colors mx-2 rounded-full mb-2" href="#">
+        <span class="material-symbols-outlined mr-4">home</span>
+        <span class="font-label-lg text-label-lg">Home</span>
+    </a>
+    <a class="flex items-center px-6 py-4 text-on-surface-variant hover:bg-surface-variant transition-colors mx-2 rounded-full mb-2" href="#">
+        <span class="material-symbols-outlined mr-4">calendar_month</span>
+        <span class="font-label-lg text-label-lg">Schedule</span>
+    </a>
+    <a class="flex items-center px-6 py-4 bg-secondary-container text-on-secondary-container mx-2 rounded-full mb-2 font-bold" href="#">
+        <span class="material-symbols-outlined fill mr-4">school</span>
+        <span class="font-label-lg text-label-lg">Learners</span>
+    </a>
+    <a class="flex items-center px-6 py-4 text-on-surface-variant hover:bg-surface-variant transition-colors mx-2 rounded-full" href="#">
+        <span class="material-symbols-outlined mr-4">person</span>
+        <span class="font-label-lg text-label-lg">Profile</span>
+    </a>
+</div>
+<!-- Adjust main content layout for desktop sidebar -->
+<style>
+    @media (min-width: 768px) {
+        main {
+            padding-left: 17rem; /* 64 (w-64) + 1rem spacing */
+        }
+        .fixed.bottom-20 {
+            left: 16rem; /* Align with content area */
+            width: calc(100% - 16rem);
+        }
+    }
+</style>
+</body></html>

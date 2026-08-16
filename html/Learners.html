@@ -1,0 +1,164 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>NirvanaDrive - Learner Directory</title>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind Config -->
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#cbbeff",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#ffba3b",
+                      "on-primary-container": "#ded4ff",
+                      "tertiary-fixed": "#e7deff",
+                      "surface-container-highest": "#e6e1e4",
+                      "on-secondary-fixed-variant": "#604100",
+                      "secondary": "#7f5700",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#644ac0",
+                      "primary": "#4c22bd",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#ebe7e9",
+                      "surface-variant": "#e6e1e4",
+                      "primary-fixed": "#e7deff",
+                      "surface-container": "#f1edef",
+                      "outline": "#797586",
+                      "outline-variant": "#cac4d7",
+                      "surface-dim": "#ddd9db",
+                      "secondary-container": "#feb316",
+                      "error-container": "#ffdad6",
+                      "inverse-on-surface": "#f4eff2",
+                      "on-secondary-container": "#6a4800",
+                      "tertiary-fixed-dim": "#ccbeff",
+                      "on-surface": "#1c1b1d",
+                      "on-tertiary-fixed-variant": "#4b2ea6",
+                      "surface-tint": "#6341d5",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#cbbeff",
+                      "on-tertiary-fixed": "#1e0060",
+                      "surface": "#fdf8fb",
+                      "on-secondary-fixed": "#281900",
+                      "primary-container": "#6442d6",
+                      "caution": "#F2A900",
+                      "background": "#FEFBFF",
+                      "on-primary-fixed-variant": "#4b21bd",
+                      "inverse-surface": "#313032",
+                      "on-tertiary-container": "#ded4ff",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#1e0061",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#fdf8fb",
+                      "success": "#2E7D32",
+                      "surface-container-low": "#f7f2f5",
+                      "secondary-fixed": "#ffdead",
+                      "tertiary": "#4c2fa6",
+                      "on-error-container": "#93000a",
+                      "on-surface-variant": "#484554",
+                      "on-background": "#1c1b1d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max-width": "1200px",
+                      "margin-desktop": "24px",
+                      "margin-mobile": "16px",
+                      "gutter": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "label-lg": ["Inter"],
+                      "headline-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "display-lg": ["57px", {"lineHeight": "64px", "letterSpacing": "-0.25px", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400"}],
+                      "title-lg": ["22px", {"lineHeight": "28px", "fontWeight": "500"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "400"}],
+                      "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for filter chips */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar Shell -->
+<header class="bg-surface shadow-sm flex justify-between items-center px-margin-mobile h-16 w-full z-50 sticky top-0 md:px-margin-desktop transition-all"><div class="flex items-center gap-3">
+    <img alt="Instructor" class="w-10 h-10 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArfQAYWsFo8DcG_OISNqL9CHVQJzaEPvNJJfvvku0RZpte3uBMfkRfk-qg0yoKgjmw8RcRVmTMzcU6mPaWFZtbrU5Erugjs46-6mZHifDS_d9AnuIUo1VT2KG4u1GWuL7xooG6PrdaHmijTVu28bMQ-5zpX7qc2cyvLG-BaBHK67BQx34wXGnlkywem7lFCFhNMf4b7yIP1mcKUTICyrurSfrdC-8sCPM3O3x3BLnbioMwzDh9hRDl">
+    <div class="flex flex-col">
+        <div class="flex items-baseline gap-2">
+            <h1 class="font-title-lg text-title-lg font-bold text-on-surface">Learners</h1>
+            <span class="text-label-md text-outline">Total: 24</span>
+        </div>
+    </div>
+</div>
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors">
+        <span class="material-symbols-outlined text-on-surface-variant">search</span>
+    </button></header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-3 pb-24 md:pb-8 flex flex-col gap-3"><section class="flex flex-col gap-3"><div class="relative w-full group"><span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span><input class="w-full bg-surface-container-low hover:bg-surface-container transition-colors text-on-surface font-body-lg text-body-lg rounded-full border border-outline-variant px-12 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder-outline-variant" placeholder="Search by name, phone, or ID..." type="text"></div><div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1"><button class="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-on-primary font-label-lg text-label-lg shadow-sm">Active (12)</button><button class="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-lg text-label-lg border border-outline-variant/30">Payment Pending (4)</button><button class="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-lg text-label-lg border border-outline-variant/30">Completed (8)</button></div></section><section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"><div class="bg-surface-container-lowest rounded-xl shadow-sm p-3 flex flex-col gap-2 border border-outline-variant/20"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><img alt="Sarah" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-xyFn7Z18qRtyikGwXaYutDK74nAh05upeIrFJoYsiyPbpRWNog6vswN95aE-wN-AWslbHy9e6XoNweow1hCLCGKRdA9hHWKau-KX_4GESnLm_TKiRgrM3X__Kn7au0llFoa0pmNKcwjZj-PDfdWIytpnrYDaH5nZ3eF_0XOO9woTjfEEMeMJbsVxRtAGi2IMGh98Zgm8tImu5WWaFLUAe95NNLYJ_BqsrLHWAtaSYdZZYSNlX61H"><h3 class="font-bold text-on-surface text-body-md">Sarah Jenkins</h3></div><span class="px-2 py-0.5 rounded-md bg-success/10 text-success font-label-md text-label-md">Paid</span></div><div class="flex justify-between items-center gap-4"><div class="flex-1 flex items-center gap-2"><span class="text-label-md text-outline shrink-0">5/10 (50%)</span><div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary w-1/2 rounded-full"></div></div></div><div class="flex gap-2"><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">call</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">chat</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">location_on</span></button></div></div></div><div class="bg-surface-container-lowest rounded-xl shadow-sm p-3 flex flex-col gap-2 border border-outline-variant/20"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><img alt="Marcus" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8IImaS1-F-48Ybzn98pTWXuk_97_8UCd3lvqo38HXvoIR750XVS0mIyafF6dw9EPWeAAwiOI4T6k_oqQ2WWU1MPNkDQ-fOyZ9YNRJYYN8m2N7pfJtSUe7ZyDmPFo76BeI9jVR1ITOW-zrf7-kOT4hciedCn059yANDVGPK98mPGgLgkh12Pww7Exvx4OT77-rfFQAT6ZEUK9vIS239JPTRN6Oe9yibzPI1HbyFbuqks-e60SabouV"><h3 class="font-bold text-on-surface text-body-md">Marcus Reed</h3></div><span class="px-2 py-0.5 rounded-md bg-error-container text-on-error-container font-label-md text-label-md">₹1,500 Due</span></div><div class="flex justify-between items-center gap-4"><div class="flex-1 flex items-center gap-2"><span class="text-label-md text-outline shrink-0">2/10 (20%)</span><div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary w-[20%] rounded-full"></div></div></div><div class="flex gap-2"><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">call</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">chat</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">location_on</span></button></div></div></div><div class="bg-surface-container-lowest rounded-xl shadow-sm p-3 flex flex-col gap-2 border border-outline-variant/20"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-tertiary text-on-primary flex items-center justify-center font-bold text-label-md shadow-sm">EL</div><h3 class="font-bold text-on-surface text-body-md">Elena Lopez</h3></div><span class="px-2 py-0.5 rounded-md bg-success/10 text-success font-label-md text-label-md">Paid</span></div><div class="flex justify-between items-center gap-4"><div class="flex-1 flex items-center gap-2"><span class="text-label-md text-outline shrink-0">8/10 (80%)</span><div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary w-[80%] rounded-full"></div></div></div><div class="flex gap-2"><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">call</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">chat</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">location_on</span></button></div></div></div><div class="bg-surface-container-lowest rounded-xl shadow-sm p-3 flex flex-col gap-2 border border-outline-variant/20"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-tertiary text-on-primary flex items-center justify-center font-bold text-label-md shadow-sm">JD</div><h3 class="font-bold text-on-surface text-body-md">John Doe</h3></div><span class="px-2 py-0.5 rounded-md bg-success/10 text-success font-label-md text-label-md">Paid</span></div><div class="flex justify-between items-center gap-4"><div class="flex-1 flex items-center gap-2"><span class="text-label-md text-outline shrink-0">9/10 (90%)</span><div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary w-[90%] rounded-full"></div></div></div><div class="flex gap-2"><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">call</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">chat</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">location_on</span></button></div></div></div><div class="bg-surface-container-lowest rounded-xl shadow-sm p-3 flex flex-col gap-2 border border-outline-variant/20"><div class="flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-tertiary text-on-primary flex items-center justify-center font-bold text-label-md shadow-sm">AS</div><h3 class="font-bold text-on-surface text-body-md">Alice Smith</h3></div><span class="px-2 py-0.5 rounded-md bg-success/10 text-success font-label-md text-label-md">Paid</span></div><div class="flex justify-between items-center gap-4"><div class="flex-1 flex items-center gap-2"><span class="text-label-md text-outline shrink-0">3/10 (30%)</span><div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary w-[30%] rounded-full"></div></div></div><div class="flex gap-2"><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">call</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">chat</span></button><button class="text-primary hover:bg-primary/5 p-1 rounded-full"><span class="material-symbols-outlined text-[18px]">location_on</span></button></div></div></div></section></main>
+<!-- BottomNavBar Shell (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-2 pb-safe bg-surface-container shadow-[0_-1px_3px_0_rgba(0,0,0,0.1)] docked full-width bottom-0 rounded-t-none md:hidden">
+    <!-- Home (Inactive) -->
+    <a class="flex flex-col items-center justify-center text-on-surface-variant px-5 py-1 hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+        <span class="material-symbols-outlined group-hover:scale-110 transition-transform">home</span>
+        <span class="font-label-md text-label-md mt-1">Home</span>
+    </a>
+    <!-- Schedule (Inactive) -->
+    <a class="flex flex-col items-center justify-center text-on-surface-variant px-5 py-1 hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+        <span class="material-symbols-outlined group-hover:scale-110 transition-transform">calendar_month</span>
+        <span class="font-label-md text-label-md mt-1">Schedule</span>
+    </a>
+    <!-- Learners (ACTIVE based on Semantic Mapping) -->
+    <a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1 scale-90 transition-all duration-200" href="#">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+        <span class="font-label-md text-label-md mt-1">Learners</span>
+    </a>
+    <!-- Profile (Inactive) -->
+    <a class="flex flex-col items-center justify-center text-on-surface-variant px-5 py-1 hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+        <span class="material-symbols-outlined group-hover:scale-110 transition-transform">person</span>
+        <span class="font-label-md text-label-md mt-1">Profile</span>
+    </a>
+</nav>
+<button class="fixed bottom-24 right-4 z-50 flex items-center gap-2 bg-primary text-on-primary px-4 py-4 rounded-full shadow-lg hover:scale-105 transition-transform active:scale-95 md:bottom-8 md:right-margin-desktop">
+    <span class="material-symbols-outlined">add</span>
+    <span class="font-label-lg text-label-lg">Add Learner</span>
+</button></body></html>
