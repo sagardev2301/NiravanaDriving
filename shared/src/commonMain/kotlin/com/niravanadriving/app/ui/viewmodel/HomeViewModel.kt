@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.niravanadriving.app.data.models.Instructor
 import com.niravanadriving.app.data.models.Lesson
 import com.niravanadriving.app.data.models.LessonSession
+import com.niravanadriving.app.data.models.LessonStatus
 import com.niravanadriving.app.data.repository.InstructorRepository
 import com.niravanadriving.app.data.repository.LessonRepository
+import com.niravanadriving.app.data.repository.PaymentRepository
 import com.niravanadriving.app.ui.util.UiState
 import com.niravanadriving.app.data.supabase
 import io.github.jan.supabase.auth.auth
@@ -26,7 +28,9 @@ import kotlinx.coroutines.launch
 data class HomeUiData(
     val instructor: Instructor,
     val ongoingLesson: Pair<Lesson, LessonSession>?,
-    val todaySchedule: List<Lesson>
+    val todaySchedule: List<Lesson>,
+    val completedTodayCount: Int,
+    val todayCollections: Double
 )
 
 class HomeViewModel : ViewModel() {
@@ -51,6 +55,20 @@ class HomeViewModel : ViewModel() {
         loadData(isRefresh = true)
     }
 
+    fun startClass(lessonId: String) {
+        viewModelScope.launch {
+            LessonRepository.startLesson(lessonId)
+            refresh()
+        }
+    }
+
+    fun endClass(lessonId: String, sessionId: String) {
+        viewModelScope.launch {
+            LessonRepository.endLesson(lessonId, sessionId)
+            refresh()
+        }
+    }
+
     private fun loadData(isRefresh: Boolean) {
         if (!isRefresh && _uiState.value is UiState.Success) return
 
@@ -64,7 +82,18 @@ class HomeViewModel : ViewModel() {
                 }
                 val ongoing = LessonRepository.getOngoingLesson(instructor.id)
                 val schedule = LessonRepository.getTodayLessons(instructor.id)
-                _uiState.value = UiState.Success(HomeUiData(instructor, ongoing, schedule))
+                val completedCount = schedule.count { it.status == LessonStatus.COMPLETED }
+                val collections = PaymentRepository.getTodayCollections(instructor.id)
+                
+                _uiState.value = UiState.Success(
+                    HomeUiData(
+                        instructor = instructor,
+                        ongoingLesson = ongoing,
+                        todaySchedule = schedule,
+                        completedTodayCount = completedCount,
+                        todayCollections = collections
+                    )
+                )
                 
                 subscribeToRealtime(instructor.id)
             } catch (e: Exception) {

@@ -2,16 +2,20 @@ package com.niravanadriving.app.data.repository
 
 import com.niravanadriving.app.data.models.Lesson
 import com.niravanadriving.app.data.models.LessonSession
+import com.niravanadriving.app.data.models.LessonStatus
 import com.niravanadriving.app.data.supabase
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import kotlin.time.DurationUnit
 
 object LessonRepository {
     private fun getTodayDate(): LocalDate {
@@ -141,6 +145,68 @@ object LessonRepository {
                 filter {
                     eq("id", lessonId)
                 }
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun startLesson(lessonId: String): LessonSession? {
+        return try {
+            // Update lesson status
+            supabase.postgrest["lessons"].update(
+                {
+                    Lesson::status setTo LessonStatus.IN_PROGRESS
+                }
+            ) {
+                filter { eq("id", lessonId) }
+            }
+
+            // Insert new session
+            val now = Clock.System.now().toString()
+            supabase.postgrest["lesson_sessions"].insert(
+                mapOf(
+                    "lesson_id" to lessonId,
+                    "started_at" to now
+                )
+            ) {
+                select()
+            }.decodeSingle<LessonSession>()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun endLesson(lessonId: String, sessionId: String): Boolean {
+        return try {
+            val now = Clock.System.now()
+            
+            // 1. Fetch session to get started_at
+            val session = supabase.postgrest["lesson_sessions"]
+                .select { filter { eq("id", sessionId) } }
+                .decodeSingle<LessonSession>()
+            
+            val startedAt = Instant.parse(session.startedAt)
+            val durationMinutes = (now - startedAt).toInt(DurationUnit.MINUTES)
+
+            // 2. Update session
+            supabase.postgrest["lesson_sessions"].update(
+                {
+                    LessonSession::endedAt setTo now.toString()
+                    LessonSession::actualDurationMinutes setTo durationMinutes
+                }
+            ) {
+                filter { eq("id", sessionId) }
+            }
+
+            // 3. Update lesson status
+            supabase.postgrest["lessons"].update(
+                {
+                    Lesson::status setTo LessonStatus.COMPLETED
+                }
+            ) {
+                filter { eq("id", lessonId) }
             }
             true
         } catch (e: Exception) {

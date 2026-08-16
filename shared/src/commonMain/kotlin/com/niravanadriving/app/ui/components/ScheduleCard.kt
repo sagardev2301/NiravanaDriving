@@ -20,7 +20,9 @@ import com.niravanadriving.app.data.models.Lesson
 fun ScheduleCard(
     lesson: Lesson,
     onNavigate: () -> Unit,
-    onCall: () -> Unit
+    onCall: () -> Unit,
+    onStartClass: (() -> Unit)? = null,
+    isStartEnabled: Boolean = true
 ) {
     val student = lesson.student
     
@@ -178,12 +180,17 @@ fun ScheduleCard(
                 Spacer(modifier = Modifier.weight(1f))
                 
                 // Call Button
+                val hasPhone = !student?.phone.isNullOrBlank()
                 OutlinedIconButton(
                     onClick = onCall,
+                    enabled = hasPhone,
                     modifier = Modifier.size(40.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(Icons.Default.Phone, contentDescription = "Call")
+                    Icon(
+                        imageVector = Icons.Default.Phone,
+                        contentDescription = if (hasPhone) "Call" else "No phone number"
+                    )
                 }
                 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -195,8 +202,18 @@ fun ScheduleCard(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Icon(Icons.Default.NearMe, contentDescription = null, modifier = Modifier.size(18.dp))
+                }
+
+                if (onStartClass != null) {
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Navigate", fontWeight = FontWeight.Bold)
+                    Button(
+                        onClick = onStartClass,
+                        enabled = isStartEnabled,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+                    }
                 }
             }
         }

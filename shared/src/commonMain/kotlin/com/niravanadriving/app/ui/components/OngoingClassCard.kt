@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,6 +15,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.niravanadriving.app.data.models.Lesson
 import com.niravanadriving.app.data.models.LessonSession
+import kotlinx.coroutines.delay
+import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 @Composable
 fun OngoingClassCard(
@@ -22,6 +27,25 @@ fun OngoingClassCard(
     session: LessonSession,
     onEndClass: () -> Unit
 ) {
+    var elapsedText by remember { mutableStateOf("00:00") }
+    val startedAt = remember(session.id) { Instant.parse(session.startedAt) }
+    var isOvertime by remember { mutableStateOf(false) }
+
+    LaunchedEffect(session.id) {
+        while (true) {
+            val now = Clock.System.now()
+            // Duration between kotlin.time.Instant (now) and kotlinx.datetime.Instant (startedAt)
+            // In 0.8.0 they are the same type.
+            val elapsed = now - startedAt
+            val totalSeconds = elapsed.toInt(DurationUnit.SECONDS)
+            val minutes = (totalSeconds / 60).toString().padStart(2, '0')
+            val seconds = (totalSeconds % 60).toString().padStart(2, '0')
+            elapsedText = "$minutes:$seconds"
+            isOvertime = elapsed.toInt(DurationUnit.MINUTES) >= lesson.durationMinutes
+            delay(1000)
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -95,9 +119,9 @@ fun OngoingClassCard(
             ) {
                 Column {
                     Text(
-                        text = "40:16", // Mock timer
+                        text = elapsedText,
                         style = MaterialTheme.typography.displayMedium,
-                        color = Color.White,
+                        color = if (isOvertime) MaterialTheme.colorScheme.error else Color.White,
                         fontWeight = FontWeight.Bold
                     )
                     Text(

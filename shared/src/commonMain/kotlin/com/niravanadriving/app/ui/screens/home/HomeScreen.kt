@@ -9,16 +9,25 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.niravanadriving.app.data.models.LessonStatus
+import com.niravanadriving.app.platform.openDialer
 import com.niravanadriving.app.ui.components.OngoingClassCard
 import com.niravanadriving.app.ui.components.ScheduleCard
 import com.niravanadriving.app.ui.components.StatusBadge
 import com.niravanadriving.app.ui.util.UiState
 import com.niravanadriving.app.ui.viewmodel.HomeViewModel
 import com.niravanadriving.app.util.DateTimeUtils
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.EventBusy
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.School
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -88,7 +97,17 @@ fun HomeScreen(viewModel: HomeViewModel) {
                             OngoingClassCard(
                                 lesson = lesson,
                                 session = session,
-                                onEndClass = { /* End Class */ }
+                                onEndClass = { viewModel.endClass(lesson.id!!, session.id) }
+                            )
+                        }
+                    }
+
+                    if (data.ongoingLesson == null && data.todaySchedule.none { it.status == LessonStatus.SCHEDULED }) {
+                        item(key = "summary") {
+                            DaySummaryCard(
+                                completedCount = data.completedTodayCount,
+                                totalCollections = data.todayCollections,
+                                isDayEmpty = data.todaySchedule.isEmpty()
                             )
                         }
                     }
@@ -136,7 +155,15 @@ fun HomeScreen(viewModel: HomeViewModel) {
                         ScheduleCard(
                             lesson = lesson,
                             onNavigate = { /* Navigate */ },
-                            onCall = { /* Call */ }
+                            onCall = {
+                                lesson.student?.phone?.let { phone ->
+                                    if (phone.isNotBlank()) openDialer(phone)
+                                }
+                            },
+                            onStartClass = if (lesson.status == LessonStatus.SCHEDULED) {
+                                { viewModel.startClass(lesson.id!!) }
+                            } else null,
+                            isStartEnabled = data.ongoingLesson == null
                         )
                     }
                     
@@ -144,6 +171,110 @@ fun HomeScreen(viewModel: HomeViewModel) {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun DaySummaryCard(
+    completedCount: Int,
+    totalCollections: Double,
+    isDayEmpty: Boolean
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Surface(
+                modifier = Modifier.size(64.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            ) {
+                Icon(
+                    imageVector = if (isDayEmpty) Icons.Default.EventBusy else Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.padding(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = if (isDayEmpty) "No classes scheduled for today" else "All done for today!",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (!isDayEmpty) {
+                    Text(
+                        text = "Great job on completing your sessions.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            if (!isDayEmpty) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SummaryStat(
+                        modifier = Modifier.weight(1f),
+                        label = "Completed",
+                        value = "$completedCount",
+                        icon = Icons.Default.School
+                    )
+                    SummaryStat(
+                        modifier = Modifier.weight(1f),
+                        label = "Collected",
+                        value = "₹${totalCollections.toInt()}",
+                        icon = Icons.Default.Payments
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SummaryStat(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    icon: ImageVector
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Column {
+                Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
         }
     }
