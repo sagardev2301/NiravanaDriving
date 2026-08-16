@@ -33,13 +33,21 @@ object StudentRepository {
 
             // Fetch balances
             val balances = supabase.postgrest["student_balance"]
-                .select()
+                .select {
+                    filter {
+                        eq("instructor_id", instructorId)
+                    }
+                }
                 .decodeList<StudentBalanceView>()
                 .associateBy { it.studentId }
 
             // Fetch progress
             val progress = supabase.postgrest["student_lesson_progress"]
-                .select()
+                .select {
+                    filter {
+                        eq("instructor_id", instructorId)
+                    }
+                }
                 .decodeList<StudentProgressView>()
                 .associateBy { it.studentId }
 

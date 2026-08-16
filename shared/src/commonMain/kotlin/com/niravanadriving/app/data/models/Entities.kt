@@ -88,7 +88,7 @@ data class Vehicle(
 
 @Serializable
 data class Lesson(
-    val id: String,
+    val id: String? = null,
     @SerialName("instructor_id") val instructorId: String,
     @SerialName("student_id") val studentId: String,
     @SerialName("scheduled_date") val scheduledDate: String,
@@ -99,6 +99,7 @@ data class Lesson(
     val route: String? = null,
     val notes: String? = null,
     @SerialName("vehicle_id") val vehicleId: String? = null,
+    @SerialName("is_draft") val isDraft: Boolean = false,
     // Helper fields for UI (to be populated via Supabase Joins)
     val student: Student? = null,
     val vehicle: Vehicle? = null

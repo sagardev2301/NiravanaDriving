@@ -20,15 +20,24 @@ import com.niravanadriving.app.data.repository.LessonRepository
 import com.niravanadriving.app.ui.components.ScheduleItemCard
 import com.niravanadriving.app.ui.util.UiState
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen() {
-    var uiState by remember { mutableStateOf<UiState<List<Lesson>>>(UiState.Loading) }
+    var uiState by remember { mutableStateOf<UiState<Unit>>(UiState.Loading) }
+    var lessons by remember { mutableStateOf<List<Lesson>>(emptyList()) }
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    
+    val tomorrow = remember {
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.plus(1, DateTimeUnit.DAY)
+    }
 
     fun loadData() {
         uiState = UiState.Loading
@@ -39,8 +48,9 @@ fun ScheduleScreen() {
                     uiState = UiState.Error("Instructor not found")
                     return@launch
                 }
-                val lessons = LessonRepository.getTodayLessons(instructor.id)
-                uiState = UiState.Success(lessons)
+                val result = LessonRepository.getLessonsForDate(instructor.id, tomorrow)
+                lessons = result
+                uiState = UiState.Success(Unit)
             } catch (e: Exception) {
                 uiState = UiState.Error(e.message ?: "Error loading schedule")
             }
@@ -52,6 +62,7 @@ fun ScheduleScreen() {
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -95,9 +106,7 @@ fun ScheduleScreen() {
                 }
             }
             is UiState.Success -> {
-                val lessons = state.data
-                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                val todayTitle = "Today, ${now.month.name.take(3)} ${now.day}"
+                val tomorrowTitle = "Tomorrow, ${tomorrow.month.name.take(3)} ${tomorrow.dayOfMonth}"
 
                 Column(
                     modifier = Modifier
@@ -121,7 +130,7 @@ fun ScheduleScreen() {
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = todayTitle,
+                                    text = tomorrowTitle,
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -131,7 +140,27 @@ fun ScheduleScreen() {
 
                         item {
                             Button(
-                                onClick = { /* Auto-fill */ },
+                                onClick = {
+                                    scope.launch {
+                                        val instructor = InstructorRepository.getCurrentInstructor()
+                                        if (instructor != null) {
+                                            val yesterdayLessons = LessonRepository.getYesterdayPublishedLessons(instructor.id)
+                                            if (yesterdayLessons.isEmpty()) {
+                                                snackbarHostState.showSnackbar("No published lessons from yesterday to fill.")
+                                            } else {
+                                                val newLessons = yesterdayLessons.map {
+                                                    it.copy(
+                                                        id = null,
+                                                        scheduledDate = tomorrow.toString(),
+                                                        isDraft = true
+                                                    )
+                                                }
+                                                lessons = lessons + newLessons
+                                                snackbarHostState.showSnackbar("Auto-filled from yesterday.")
+                                            }
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -156,7 +185,23 @@ fun ScheduleScreen() {
                         itemsIndexed(lessons) { index, lesson ->
                             ScheduleItemCard(
                                 lesson = lesson,
-                                onRemove = { /* Remove */ }
+                                onRemove = {
+                                    scope.launch {
+                                        val id = lesson.id
+                                        if (id != null) {
+                                            if (LessonRepository.deleteLesson(id)) {
+                                                lessons = lessons.filter { it.id != id }
+                                            } else {
+                                                snackbarHostState.showSnackbar("Failed to delete lesson.")
+                                            }
+                                        } else {
+                                            // Local draft, just remove from list
+                                            // Since id is null, we might need another way to identify, 
+                                            // but for now let's assume we can filter by reference if they are the same object.
+                                            lessons = lessons.filterIndexed { i, _ -> i != index }
+                                        }
+                                    }
+                                }
                             )
                             
                             if (index < lessons.lastIndex) {
@@ -181,7 +226,16 @@ fun ScheduleScreen() {
                                 .navigationBarsPadding()
                         ) {
                             OutlinedButton(
-                                onClick = { /* Save Draft */ },
+                                onClick = {
+                                    scope.launch {
+                                        if (LessonRepository.saveDraftLessons(lessons)) {
+                                            snackbarHostState.showSnackbar("Draft saved.")
+                                            loadData() // Reload to get fresh IDs from DB
+                                        } else {
+                                            snackbarHostState.showSnackbar("Failed to save draft.")
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = CircleShape,
                                 contentPadding = PaddingValues(12.dp)
@@ -192,11 +246,30 @@ fun ScheduleScreen() {
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             Button(
-                                onClick = { /* Publish */ },
+                                onClick = {
+                                    scope.launch {
+                                        val instructor = InstructorRepository.getCurrentInstructor()
+                                        if (instructor != null) {
+                                            // First save any unsaved local changes as drafts
+                                            if (LessonRepository.saveDraftLessons(lessons)) {
+                                                if (LessonRepository.publishLessonsForDate(instructor.id, tomorrow)) {
+                                                    // TODO: trigger notification
+                                                    snackbarHostState.showSnackbar("Schedule published successfully.")
+                                                    loadData() // Refresh UI
+                                                } else {
+                                                    snackbarHostState.showSnackbar("Failed to publish schedule.")
+                                                }
+                                            } else {
+                                                snackbarHostState.showSnackbar("Failed to save state before publishing.")
+                                            }
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = CircleShape,
                                 contentPadding = PaddingValues(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C22BD))
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C22BD)),
+                                enabled = lessons.isNotEmpty()
                             ) {
                                 Icon(Icons.Default.Publish, contentDescription = null, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
