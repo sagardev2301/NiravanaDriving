@@ -30,7 +30,9 @@ import com.niravanadriving.app.ui.screens.learner.LearnerScreen
 import com.niravanadriving.app.ui.screens.login.LoginScreen
 import com.niravanadriving.app.ui.screens.profile.ProfileScreen
 import com.niravanadriving.app.ui.screens.schedule.AddEditLessonScreen
+import com.niravanadriving.app.ui.screens.schedule.ArrangeScheduleScreen
 import com.niravanadriving.app.ui.screens.schedule.ScheduleScreen
+import com.niravanadriving.app.ui.screens.schedule.SelectLearnersScreen
 import com.niravanadriving.app.ui.viewmodel.HomeViewModel
 import com.niravanadriving.app.ui.viewmodel.ScheduleViewModel
 import com.niravanadriving.app.ui.viewmodel.LearnerViewModel
@@ -47,6 +49,12 @@ object ScheduleRoute
 
 @Serializable
 object LearnerRoute
+
+@Serializable
+object SelectLearnersRoute
+
+@Serializable
+data class ArrangeScheduleRoute(val studentIds: List<String>)
 
 @Serializable
 object ProfileRoute
@@ -112,8 +120,26 @@ fun AppNavigation() {
             composable<ScheduleRoute> {
                 ScheduleScreen(
                     viewModel = scheduleViewModel,
-                    onAddLesson = { navController.navigate(AddEditLessonRoute(null)) },
+                    onAddLesson = { navController.navigate(SelectLearnersRoute) },
                     onEditLesson = { id -> navController.navigate(AddEditLessonRoute(id)) }
+                )
+            }
+            composable<SelectLearnersRoute> {
+                SelectLearnersScreen(
+                    viewModel = scheduleViewModel,
+                    onCancel = { navController.popBackStack() },
+                    onContinue = { ids -> navController.navigate(ArrangeScheduleRoute(ids)) }
+                )
+            }
+            composable<ArrangeScheduleRoute> { backStackEntry ->
+                val route: ArrangeScheduleRoute = backStackEntry.toRoute()
+                ArrangeScheduleScreen(
+                    viewModel = scheduleViewModel,
+                    studentIds = route.studentIds,
+                    onBack = { navController.popBackStack() },
+                    onSuccess = {
+                        navController.popBackStack(ScheduleRoute, inclusive = false)
+                    }
                 )
             }
             composable<LearnerRoute> {

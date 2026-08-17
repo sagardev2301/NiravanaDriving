@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>NirvanaDrive - Arrange Schedule</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#F2ECEE",
+                        "inverse-surface": "#313032",
+                        "tertiary-fixed": "#e7deff",
+                        "on-surface-variant": "#484554",
+                        "surface-dim": "#ddd9db",
+                        "primary-fixed-dim": "#cbbeff",
+                        "on-surface": "#1C1B1D",
+                        "on-error-container": "#93000a",
+                        "success": "#2E7D32",
+                        "on-tertiary-fixed-variant": "#4b2ea6",
+                        "on-secondary-fixed-variant": "#604100",
+                        "surface": "#fdf8fb",
+                        "on-primary-container": "#ded4ff",
+                        "on-primary-fixed-variant": "#4b21bd",
+                        "on-secondary-fixed": "#281900",
+                        "caution": "#F2A900",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#f1edef",
+                        "secondary-fixed": "#ffdead",
+                        "tertiary-fixed-dim": "#ccbeff",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "outline": "#797586",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#feb316",
+                        "surface-container-high": "#ebe7e9",
+                        "tertiary": "#4c2fa6",
+                        "primary-fixed": "#e7deff",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f4eff2",
+                        "outline-variant": "#cac4d7",
+                        "on-tertiary-container": "#ded4ff",
+                        "primary-container": "#6442d6",
+                        "on-primary-fixed": "#1e0061",
+                        "surface-container-low": "#f7f2f5",
+                        "on-primary": "#ffffff",
+                        "secondary": "#7f5700",
+                        "on-secondary-container": "#6a4800",
+                        "surface-container-highest": "#e6e1e4",
+                        "tertiary-container": "#644ac0",
+                        "secondary-fixed-dim": "#ffba3b",
+                        "primary": "#4c22bd",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fdf8fb",
+                        "background": "#FEFBFF",
+                        "on-background": "#1c1b1d",
+                        "on-tertiary-fixed": "#1e0060",
+                        "inverse-primary": "#cbbeff",
+                        "surface-tint": "#6341d5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "container-max-width": "1200px",
+                        "gutter": "16px",
+                        "margin-desktop": "24px"
+                    },
+                    "fontFamily": {
+                        "label-lg": ["Inter", "sans-serif"],
+                        "label-md": ["Inter", "sans-serif"],
+                        "display-lg": ["Inter", "sans-serif"],
+                        "headline-lg-mobile": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "title-lg": ["Inter", "sans-serif"],
+                        "headline-lg": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.25px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400" }],
+                        "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FEFBFF; color: #1c1b1d; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill-1 { font-variation-settings: 'FILL' 1; }
+
+        /* Draggable Card Animations */
+        .drag-handle:active { cursor: grabbing; }
+        .drag-handle { cursor: grab; }
+        .sorting { opacity: 0.8; transform: scale(0.98); box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 10; transition: all 0.2s ease; }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col overflow-x-hidden pb-24">
+<!-- Top App Bar (Suppressing global nav shell due to transactional/focused flow intent) -->
+<header class="flex justify-between items-center px-margin-mobile h-16 w-full z-50 bg-surface shadow-sm sticky top-0">
+    <button aria-label="Back" class="text-on-surface p-2 rounded-full hover:bg-surface-variant transition-colors">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <div class="flex-1 text-center">
+        <h1 class="font-title-lg text-title-lg text-on-surface">Arrange Schedule</h1>
+        <p class="font-label-md text-label-md text-on-surface-variant">Step 2: Set sequence and timings</p>
+    </div>
+    <button aria-label="Help" class="text-on-surface p-2 rounded-full hover:bg-surface-variant transition-colors">
+        <span class="material-symbols-outlined">help_outline</span>
+    </button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin-mobile py-6 flex flex-col gap-4 max-w-container-max-width mx-auto w-full">
+    <!-- Draggable Learner Card 1 -->
+    <article class="bg-surface rounded-2xl shadow-sm border border-surface-variant p-4 flex flex-col gap-3 relative transition-all duration-200">
+        <div class="flex items-center gap-3">
+            <div class="drag-handle p-2 text-outline hover:bg-surface-variant rounded-full transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined">drag_handle</span>
+            </div>
+            <img alt="Sarah J." class="w-12 h-12 rounded-full object-cover border-2 border-surface-container" data-alt="A portrait of a young female student driver with a friendly expression, wearing a casual light blue jacket. Soft, natural lighting highlights her face, set against a blurred suburban background, maintaining a professional and approachable aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlbda9nVC9IUtxx1BntOOxzG0sf51GwVXjyKHFwKKoggL0MWp_i8fnfYQHatsjcgXUuG_3knmwMgQMHnvJBlFp5ANe2EFayhUCbTcXDx74nOsdkS19Hp5fJWAF8FAg3byzOTiFA3MXm2GmBTcM0btaBvhhOolfdvapCmpMm10nHeUxG-vqA91dlwIgK64-VW09KDqx1ZeLcxDyN-WUZUEGcH6Yu9a5hbiIxceh3x-DmVQ6gBuJwHZ6"/>
+            <div class="flex-1 min-w-0">
+                <h2 class="font-label-lg text-label-lg text-on-surface truncate">Sarah J.</h2>
+                <p class="font-label-md text-label-md text-on-surface-variant truncate">Standard Lesson (60m)</p>
+            </div>
+            <button aria-label="Set Time for Sarah" class="bg-primary-container text-on-primary-container font-label-md text-label-md px-3 py-1.5 rounded-full flex items-center gap-1 hover:bg-primary-fixed-dim transition-colors">
+                <span class="material-symbols-outlined text-[16px]">schedule</span>
+                08:00 AM
+                <span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+            </button>
+        </div>
+        <div class="pl-12 pr-2">
+            <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">location_on</span>
+                <input aria-label="Pickup Location" class="w-full bg-surface-container-low border-none border-b border-outline hover:bg-surface-variant focus:bg-surface focus:border-b-2 focus:border-primary focus:ring-0 pl-10 py-2 rounded-t-lg font-body-md text-body-md text-on-surface transition-all" type="text" value="124 City Dr, North"/>
+            </div>
+        </div>
+    </article>
+    <!-- Smart Logic: Buffer Hint -->
+    <div class="flex items-center justify-center gap-2 py-1 relative">
+        <div class="h-6 w-px bg-outline-variant absolute left-[2.25rem] -top-2 -z-10"></div>
+        <div class="h-6 w-px bg-outline-variant absolute left-[2.25rem] -bottom-2 -z-10"></div>
+        <span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1 shadow-sm border border-surface-variant">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+                Suggested: 15m buffer
+            </span>
+    </div>
+    <!-- Draggable Learner Card 2 (With Conflict Warning) -->
+    <article class="bg-surface rounded-2xl shadow-sm border border-caution/30 p-4 flex flex-col gap-3 relative transition-all duration-200">
+        <div class="flex items-center gap-3">
+            <div class="drag-handle p-2 text-outline hover:bg-surface-variant rounded-full transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined">drag_handle</span>
+            </div>
+            <img alt="Marcus T." class="w-12 h-12 rounded-full object-cover border-2 border-surface-container" data-alt="A portrait of a male student driver in his late twenties, looking focused. He is wearing a dark navy polo shirt. The background is a brightly lit, modern classroom setting, slightly out of focus, adhering to a clean, corporate light-mode visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqNF77P85qtk80b5QlceL4GqT3zwREVAVSGZHPFnGajI6b5ynybhEuwSL1RkyPr9xCjwf8ZA-2C80wxmrg8PoaL5V1B02BdRzWZilxAAmjI6bDB3JyGatRrRvT9KDBiE_3Ep-xv7tdRTzQ22fOc8vc1pflgjjWhRSxHjzmXBVabJNl8Yz77Azf-xNCaljtQOyaI_FDnn2CJBnTVqYcKPczh7zO81mNs2MWAXxg4eJjHHbgwVw6HH6M"/>
+            <div class="flex-1 min-w-0">
+                <h2 class="font-label-lg text-label-lg text-on-surface truncate">Marcus T.</h2>
+                <p class="font-label-md text-label-md text-on-surface-variant truncate">Highway Prep (90m)</p>
+            </div>
+            <button aria-label="Set Time for Marcus" class="bg-error-container text-on-error-container font-label-md text-label-md px-3 py-1.5 rounded-full flex items-center gap-1 hover:bg-[#ffb4ab] transition-colors">
+                <span class="material-symbols-outlined text-[16px]">schedule</span>
+                08:45 AM
+                <span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+            </button>
+        </div>
+        <div class="pl-12 pr-2">
+            <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">location_on</span>
+                <input aria-label="Pickup Location" class="w-full bg-surface-container-low border-none border-b border-outline hover:bg-surface-variant focus:bg-surface focus:border-b-2 focus:border-primary focus:ring-0 pl-10 py-2 rounded-t-lg font-body-md text-body-md text-on-surface transition-all" type="text" value="88 West End Ave"/>
+            </div>
+        </div>
+        <!-- Conflict Warning Banner -->
+        <div class="bg-secondary-fixed-dim/20 border border-caution rounded-lg p-2 mt-1 ml-12 flex items-start gap-2">
+            <span class="material-symbols-outlined text-caution text-[18px] icon-fill-1 mt-0.5">warning</span>
+            <p class="font-label-md text-label-md text-on-surface">Overlap detected: Previous lesson ends at 09:00 AM.</p>
+        </div>
+    </article>
+    <!-- Smart Logic: Buffer Hint -->
+    <div class="flex items-center justify-center gap-2 py-1 relative">
+        <div class="h-6 w-px bg-outline-variant absolute left-[2.25rem] -top-2 -z-10"></div>
+        <div class="h-6 w-px bg-outline-variant absolute left-[2.25rem] -bottom-2 -z-10"></div>
+        <span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1 shadow-sm border border-surface-variant">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+                Suggested: 30m buffer (Traffic)
+            </span>
+    </div>
+    <!-- Draggable Learner Card 3 -->
+    <article class="bg-surface rounded-2xl shadow-sm border border-surface-variant p-4 flex flex-col gap-3 relative transition-all duration-200">
+        <div class="flex items-center gap-3">
+            <div class="drag-handle p-2 text-outline hover:bg-surface-variant rounded-full transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined">drag_handle</span>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center font-title-lg border-2 border-surface-container">
+                EP
+            </div>
+            <div class="flex-1 min-w-0">
+                <h2 class="font-label-lg text-label-lg text-on-surface truncate">Elena P.</h2>
+                <p class="font-label-md text-label-md text-on-surface-variant truncate">Mock Test (45m)</p>
+            </div>
+            <button aria-label="Set Time for Elena" class="bg-surface-container-high text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-full flex items-center gap-1 hover:bg-surface-variant transition-colors border border-outline-variant">
+                <span class="material-symbols-outlined text-[16px]">schedule</span>
+                10:45 AM
+                <span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+            </button>
+        </div>
+        <div class="pl-12 pr-2">
+            <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">location_on</span>
+                <input aria-label="Pickup Location" class="w-full bg-surface-container-low border-none border-b border-outline hover:bg-surface-variant focus:bg-surface focus:border-b-2 focus:border-primary focus:ring-0 pl-10 py-2 rounded-t-lg font-body-md text-body-md text-on-surface transition-all" type="text" value="DMV Test Center, East"/>
+            </div>
+        </div>
+    </article>
+</main>
+<!-- Sticky Footer Actions -->
+<footer class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-md border-t border-surface-variant p-margin-mobile shadow-[0_-4px_12px_rgba(0,0,0,0.05)] z-40 pb-safe">
+    <div class="max-w-container-max-width mx-auto flex flex-col gap-3">
+        <button class="w-full bg-primary text-on-primary font-label-lg text-label-lg py-3 rounded-full shadow-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">send</span>
+            Publish &amp; Send Notifications
+        </button>
+        <button class="w-full bg-transparent text-primary border-2 border-primary font-label-lg text-label-lg py-2.5 rounded-full hover:bg-primary-fixed/30 transition-colors">
+            Save Draft
+        </button>
+    </div>
+</footer>
+<script>
+    // Simple script to handle drag interactions visually (mock functionality)
+    document.addEventListener('DOMContentLoaded', () => {
+        const dragHandles = document.querySelectorAll('.drag-handle');
+        dragHandles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                const card = e.target.closest('article');
+                card.classList.add('sorting');
+            });
+            handle.addEventListener('mouseup', (e) => {
+                const card = e.target.closest('article');
+                card.classList.remove('sorting');
+            });
+            handle.addEventListener('mouseleave', (e) => {
+                const card = e.target.closest('article');
+                if(card) card.classList.remove('sorting');
+            });
+            // Touch events for mobile
+            handle.addEventListener('touchstart', (e) => {
+                const card = e.target.closest('article');
+                card.classList.add('sorting');
+            });
+            handle.addEventListener('touchend', (e) => {
+                const card = e.target.closest('article');
+                card.classList.remove('sorting');
+            });
+        });
+    });
+</script>
+</body></html>

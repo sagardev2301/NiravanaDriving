@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NirvanaDrive - Select Learners</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#F2ECEE",
+                      "inverse-surface": "#313032",
+                      "tertiary-fixed": "#e7deff",
+                      "on-surface-variant": "#484554",
+                      "surface-dim": "#ddd9db",
+                      "primary-fixed-dim": "#cbbeff",
+                      "on-surface": "#1C1B1D",
+                      "on-error-container": "#93000a",
+                      "success": "#2E7D32",
+                      "on-tertiary-fixed-variant": "#4b2ea6",
+                      "on-secondary-fixed-variant": "#604100",
+                      "surface": "#fdf8fb",
+                      "on-primary-container": "#ded4ff",
+                      "on-primary-fixed-variant": "#4b21bd",
+                      "on-secondary-fixed": "#281900",
+                      "caution": "#F2A900",
+                      "error-container": "#ffdad6",
+                      "surface-container": "#f1edef",
+                      "secondary-fixed": "#ffdead",
+                      "tertiary-fixed-dim": "#ccbeff",
+                      "error": "#ba1a1a",
+                      "on-secondary": "#ffffff",
+                      "outline": "#797586",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#feb316",
+                      "surface-container-high": "#ebe7e9",
+                      "tertiary": "#4c2fa6",
+                      "primary-fixed": "#e7deff",
+                      "on-error": "#ffffff",
+                      "inverse-on-surface": "#f4eff2",
+                      "outline-variant": "#cac4d7",
+                      "on-tertiary-container": "#ded4ff",
+                      "primary-container": "#6442d6",
+                      "on-primary-fixed": "#1e0061",
+                      "surface-container-low": "#f7f2f5",
+                      "on-primary": "#ffffff",
+                      "secondary": "#7f5700",
+                      "on-secondary-container": "#6a4800",
+                      "surface-container-highest": "#e6e1e4",
+                      "tertiary-container": "#644ac0",
+                      "secondary-fixed-dim": "#ffba3b",
+                      "primary": "#4c22bd",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#fdf8fb",
+                      "background": "#FEFBFF",
+                      "on-background": "#1c1b1d",
+                      "on-tertiary-fixed": "#1e0060",
+                      "inverse-primary": "#cbbeff",
+                      "surface-tint": "#6341d5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px",
+                      "card": "16px",
+                      "button": "8px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "container-max-width": "1200px",
+                      "gutter": "16px",
+                      "margin-desktop": "24px"
+              },
+              "fontFamily": {
+                      "label-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "body-md": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500"}],
+                      "display-lg": ["57px", {"lineHeight": "64px", "letterSpacing": "-0.25px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "400"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.25px", "fontWeight": "400"}],
+                      "title-lg": ["22px", {"lineHeight": "28px", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "400"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "letterSpacing": "0.5px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        /* Custom Checkbox Styles */
+        .learner-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border: 2px solid theme('colors.outline');
+            border-radius: 4px;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .learner-checkbox:checked {
+            background-color: theme('colors.primary');
+            border-color: theme('colors.primary');
+        }
+
+        .learner-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* Hide scrollbar for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-full overflow-hidden flex flex-col font-sans antialiased">
+<!-- Top App Bar (Header) -->
+<header class="bg-surface shadow-sm z-10 pt-safe-top">
+    <div class="flex items-center justify-between px-margin-mobile h-16">
+        <button aria-label="Go back" class="text-on-surface hover:bg-surface-variant p-2 rounded-full transition-colors flex items-center justify-center w-10 h-10">
+            <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+        <div class="flex-1 text-center">
+            <h1 class="font-title-lg text-title-lg text-on-surface">Select Learners</h1>
+        </div>
+        <button aria-hidden="true" class="text-on-surface hover:bg-surface-variant p-2 rounded-full transition-colors flex items-center justify-center w-10 h-10 invisible">
+            <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+    </div>
+    <div class="px-margin-mobile pb-4 text-center">
+        <p class="font-body-md text-body-md text-on-surface-variant">Choose students for tomorrow</p>
+    </div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto no-scrollbar pb-32">
+    <!-- Search Bar -->
+    <div class="px-margin-mobile py-base sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+        <div class="relative flex items-center w-full h-14 rounded-full bg-surface-container-highest px-4 transition-shadow focus-within:shadow-[0_1px_3px_0_rgba(0,0,0,0.1),_0_1px_2px_0_rgba(0,0,0,0.06)]">
+            <span class="material-symbols-outlined text-on-surface-variant mr-3">search</span>
+            <input class="flex-1 bg-transparent border-none outline-none focus:ring-0 font-body-lg text-body-lg text-on-surface placeholder-on-surface-variant py-2 h-full" placeholder="Search learners..." type="text"/>
+        </div>
+    </div>
+    <!-- Learner List -->
+    <div class="px-margin-mobile flex flex-col gap-base mt-2 pb-4" id="learner-list">
+        <!-- Selected Learner Row -->
+        <label class="flex items-center p-4 rounded-card bg-primary-container text-on-primary-container shadow-sm transition-all active:scale-[0.98] cursor-pointer" for="learner-1">
+            <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-title-lg text-title-lg mr-4 shrink-0 overflow-hidden relative">
+                <img class="object-cover w-full h-full absolute inset-0 z-0" data-alt="A close-up portrait of a young adult driver wearing a casual jacket, sitting in a car driver seat, looking forward with focus. Natural daylight illuminates their face, casting soft shadows. The overall aesthetic is clean, professional, and slightly corporate with a hint of purple tones in the background to match the NirvanaDrive brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUvdHUvlBdKPuXIGtk3j3_PPlk3R0PAOV_chA1cbsAiG97jlJAVeOzYwxLExgPq5yFmSbmfzjWPoMj_y9T6spR1xkD_cWjJpk-ID1sx7z0owkzbDoP_gHCnGLnDaCSZ8W7Wu97xBOlhAbn_VLQDh2qTOHUJbq4NiBTXe-y8grYFfz5lAhPqzKxQr5U2S_5kVa6WBPlFCfANVB_S-LQ9Ei07fDx6Setth82e2mNYp7SfS1Dp2_vOSzN"/>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-body-lg text-body-lg font-medium truncate">Emma Thompson</p>
+                <p class="font-body-md text-body-md text-on-primary-container/80 truncate">Manual • 12 hrs completed</p>
+            </div>
+            <div class="ml-4 shrink-0 flex items-center justify-center">
+                <input checked="" class="learner-checkbox" id="learner-1" type="checkbox"/>
+            </div>
+        </label>
+        <!-- Unselected Learner Row -->
+        <label class="flex items-center p-4 rounded-card bg-surface hover:bg-surface-variant shadow-sm transition-all active:scale-[0.98] cursor-pointer border border-transparent" for="learner-2">
+            <div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-title-lg text-title-lg mr-4 shrink-0">
+                JL
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-body-lg text-body-lg font-medium text-on-surface truncate">James Lawson</p>
+                <p class="font-body-md text-body-md text-on-surface-variant truncate">Automatic • 4 hrs completed</p>
+            </div>
+            <div class="ml-4 shrink-0 flex items-center justify-center">
+                <input class="learner-checkbox" id="learner-2" type="checkbox"/>
+            </div>
+        </label>
+        <!-- Selected Learner Row -->
+        <label class="flex items-center p-4 rounded-card bg-primary-container text-on-primary-container shadow-sm transition-all active:scale-[0.98] cursor-pointer" for="learner-3">
+            <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-title-lg text-title-lg mr-4 shrink-0 overflow-hidden relative">
+                <img class="object-cover w-full h-full absolute inset-0 z-0" data-alt="A professional headshot of a female student driver with glasses, smiling softly. She is outdoors with a blurred driving range background. Bright, natural lighting creates a friendly, calm, and approachable mood consistent with a modern, high-end corporate style, featuring subtle cool purple accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKJ_GDJoSp6Rp-VATXATEKcCrg3Zc0YHX2iP1RqjmvHhu-_Yi7FCMzbQDyFg7cL1Y9Jhp_3kLsyCEGfGyhimYHFJkK6JV7X2iWa1CI5_2FnC281rRiFjlalwzE28WdqUUcECpmcwQNqFONYbrnmaOhP3EsnkdJ7XvyWqHJ1WhBNNLQyTyRELtWi1Hbkii3SXAOoovKN3phOj6_ujdMmBmqQxfahrn0jK0XPtVimcTACtDSlF14B8nT"/>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-body-lg text-body-lg font-medium truncate">Sophia Chen</p>
+                <p class="font-body-md text-body-md text-on-primary-container/80 truncate">Manual • 20 hrs completed</p>
+            </div>
+            <div class="ml-4 shrink-0 flex items-center justify-center">
+                <input checked="" class="learner-checkbox" id="learner-3" type="checkbox"/>
+            </div>
+        </label>
+        <!-- Unselected Learner Row -->
+        <label class="flex items-center p-4 rounded-card bg-surface hover:bg-surface-variant shadow-sm transition-all active:scale-[0.98] cursor-pointer border border-transparent" for="learner-4">
+            <div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-title-lg text-title-lg mr-4 shrink-0">
+                MR
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-body-lg text-body-lg font-medium text-on-surface truncate">Michael Roberts</p>
+                <p class="font-body-md text-body-md text-on-surface-variant truncate">Automatic • 1 hr completed</p>
+            </div>
+            <div class="ml-4 shrink-0 flex items-center justify-center">
+                <input class="learner-checkbox" id="learner-4" type="checkbox"/>
+            </div>
+        </label>
+        <!-- Selected Learner Row -->
+        <label class="flex items-center p-4 rounded-card bg-primary-container text-on-primary-container shadow-sm transition-all active:scale-[0.98] cursor-pointer" for="learner-5">
+            <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-title-lg text-title-lg mr-4 shrink-0 overflow-hidden relative">
+                <img class="object-cover w-full h-full absolute inset-0 z-0" data-alt="A portrait of a male student driver wearing a casual hoodie, looking relaxed and confident. The background is slightly blurred showing a dashboard of a car. Soft, warm lighting is used, creating an inviting atmosphere that matches a modern corporate light-mode design with subtle purple brand hints." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnQRYSrwi91iIGnylk1USZro6hbTMAhi7Vw5cR3Z6UjosTW8upBZ2XncYb5Q1cRQtG1ddk9Okx7Yr2pCxkPKDcM0ATvqX9DCB9EGJx1dMknE8icku9PvZj2xIrz8tmUJViewZg7kLEd-1m9oHPtrJzCBf4J8bAO_p7Q8gp-cSMBg5Zn8h-_wRiWTarRpiImIlLHNU380qBidD_zjphFEDpD47-KH2U3El5YHRqVA5Bq4DZzvjPrjgy"/>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-body-lg text-body-lg font-medium truncate">David Kim</p>
+                <p class="font-body-md text-body-md text-on-primary-container/80 truncate">Manual • 8 hrs completed</p>
+            </div>
+            <div class="ml-4 shrink-0 flex items-center justify-center">
+                <input checked="" class="learner-checkbox" id="learner-5" type="checkbox"/>
+            </div>
+        </label>
+        <!-- Unselected Learner Row -->
+        <label class="flex items-center p-4 rounded-card bg-surface hover:bg-surface-variant shadow-sm transition-all active:scale-[0.98] cursor-pointer border border-transparent" for="learner-6">
+            <div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-title-lg text-title-lg mr-4 shrink-0">
+                AW
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="font-body-lg text-body-lg font-medium text-on-surface truncate">Alice Williams</p>
+                <p class="font-body-md text-body-md text-on-surface-variant truncate">Manual • 0 hrs completed</p>
+            </div>
+            <div class="ml-4 shrink-0 flex items-center justify-center">
+                <input class="learner-checkbox" id="learner-6" type="checkbox"/>
+            </div>
+        </label>
+    </div>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface border-t border-surface-variant p-margin-mobile shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 pb-safe">
+    <div class="flex flex-col gap-4 max-w-container-max-width mx-auto">
+        <div class="flex items-center justify-between px-2">
+            <p class="font-label-lg text-label-lg text-on-surface font-medium" id="selection-count">4 learners selected</p>
+            <button class="text-primary font-label-lg text-label-lg font-semibold hover:text-primary-container transition-colors">Clear all</button>
+        </div>
+        <button class="w-full h-12 bg-primary text-on-primary rounded-button font-label-lg text-label-lg font-semibold flex items-center justify-center shadow-sm hover:bg-primary/90 transition-all active:scale-[0.98]">
+            Continue
+            <span class="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
+        </button>
+    </div>
+</div>
+<script>
+    // Simple vanilla JS to handle row styling based on checkbox state
+    document.addEventListener('DOMContentLoaded', () => {
+        const labels = document.querySelectorAll('#learner-list label');
+        const countDisplay = document.getElementById('selection-count');
+        let selectedCount = document.querySelectorAll('.learner-checkbox:checked').length;
+
+        function updateCount() {
+            countDisplay.textContent = `${selectedCount} learner${selectedCount !== 1 ? 's' : ''} selected`;
+        }
+
+        labels.forEach(label => {
+            const checkbox = label.querySelector('.learner-checkbox');
+
+            // Set initial state styling
+            if (checkbox.checked) {
+                label.classList.remove('bg-surface', 'hover:bg-surface-variant', 'border-transparent');
+                label.classList.add('bg-primary-container', 'text-on-primary-container');
+
+                // Update text colors for selected state
+                const texts = label.querySelectorAll('.text-on-surface, .text-on-surface-variant');
+                texts.forEach(t => {
+                    if (t.classList.contains('text-on-surface')) {
+                        t.classList.remove('text-on-surface');
+                        t.classList.add('text-on-primary-container');
+                        t.dataset.originalColor = 'text-on-surface';
+                    } else if (t.classList.contains('text-on-surface-variant')) {
+                        t.classList.remove('text-on-surface-variant');
+                        t.classList.add('text-on-primary-container/80');
+                        t.dataset.originalColor = 'text-on-surface-variant';
+                    }
+                });
+            }
+
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    selectedCount++;
+                    label.classList.remove('bg-surface', 'hover:bg-surface-variant', 'border-transparent');
+                    label.classList.add('bg-primary-container', 'text-on-primary-container');
+
+                    const texts = label.querySelectorAll('[data-original-color]');
+                    texts.forEach(t => {
+                         if (t.dataset.originalColor === 'text-on-surface') {
+                             t.classList.remove('text-on-surface');
+                             t.classList.add('text-on-primary-container');
+                         } else {
+                             t.classList.remove('text-on-surface-variant');
+                             t.classList.add('text-on-primary-container/80');
+                         }
+                    });
+
+                } else {
+                    selectedCount--;
+                    label.classList.remove('bg-primary-container', 'text-on-primary-container');
+                    label.classList.add('bg-surface', 'hover:bg-surface-variant', 'border-transparent');
+
+                    const texts = label.querySelectorAll('.text-on-primary-container, .text-on-primary-container\\/80');
+                    texts.forEach(t => {
+                        if (t.classList.contains('text-on-primary-container')) {
+                            t.classList.remove('text-on-primary-container');
+                            t.classList.add('text-on-surface');
+                        } else {
+                            t.classList.remove('text-on-primary-container/80');
+                            t.classList.add('text-on-surface-variant');
+                        }
+                    });
+                }
+                updateCount();
+            });
+        });
+    });
+</script>
+</body></html>
