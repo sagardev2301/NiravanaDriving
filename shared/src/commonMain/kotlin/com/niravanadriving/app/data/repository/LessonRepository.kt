@@ -91,13 +91,17 @@ object LessonRepository {
     }
 
     suspend fun getYesterdayPublishedLessons(instructorId: String): List<Lesson> {
+        val yesterday = getTodayDate().minus(1, DateTimeUnit.DAY)
+        return getPublishedLessonsForDate(instructorId, yesterday)
+    }
+
+    suspend fun getPublishedLessonsForDate(instructorId: String, date: LocalDate): List<Lesson> {
         return try {
-            val yesterday = getTodayDate().minus(1, DateTimeUnit.DAY)
             supabase.postgrest["lessons"]
                 .select(Columns.raw("*, student:students(*), vehicle:vehicles(*)")) {
                     filter {
                         eq("instructor_id", instructorId)
-                        eq("scheduled_date", yesterday.toString())
+                        eq("scheduled_date", date.toString())
                         eq("is_draft", false)
                     }
                     order("scheduled_time", Order.ASCENDING)

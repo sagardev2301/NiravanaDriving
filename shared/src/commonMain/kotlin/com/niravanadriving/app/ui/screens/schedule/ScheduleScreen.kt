@@ -2,6 +2,8 @@ package com.niravanadriving.app.ui.screens.schedule
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,12 +21,19 @@ import com.niravanadriving.app.ui.components.ScheduleItemCard
 import com.niravanadriving.app.ui.util.UiState
 import com.niravanadriving.app.ui.viewmodel.ScheduleViewModel
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(viewModel: ScheduleViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lessons by viewModel.lessons.collectAsStateWithLifecycle()
+    val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     
@@ -50,37 +59,41 @@ fun ScheduleScreen(viewModel: ScheduleViewModel) {
                 },
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
             )
         }
     ) { padding ->
-        when (val state = uiState) {
-            is UiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            DayTabs(
+                selectedDate = selectedDate,
+                onDateSelected = { viewModel.selectDate(it) }
+            )
+
+            when (val state = uiState) {
+                is UiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            is UiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(state.message, color = MaterialTheme.colorScheme.error)
-                        Button(onClick = { viewModel.refresh() }, modifier = Modifier.padding(top = 16.dp)) {
-                            Text("Retry")
+                is UiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(state.message, color = MaterialTheme.colorScheme.error)
+                            Button(onClick = { viewModel.refresh() }, modifier = Modifier.padding(top = 16.dp)) {
+                                Text("Retry")
+                            }
                         }
                     }
                 }
-            }
-            is UiState.Success -> {
-                val tomorrow = viewModel.tomorrow
-                val tomorrowTitle = "Tomorrow, ${tomorrow.month.name.take(3)} ${tomorrow.day}"
+                is UiState.Success -> {
+                    val dateTitle = formatDateTitle(selectedDate)
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                ) {
                     LazyColumn(
                         modifier = Modifier
                             .weight(1f)
@@ -98,7 +111,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel) {
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = tomorrowTitle,
+                                    text = dateTitle,
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -109,12 +122,12 @@ fun ScheduleScreen(viewModel: ScheduleViewModel) {
                         item(key = "auto-fill") {
                             Button(
                                 onClick = {
-                                    viewModel.autoFillFromYesterday(
+                                    viewModel.autoFillFromPreviousDay(
                                         onNoLessons = {
-                                            scope.launch { snackbarHostState.showSnackbar("No published lessons from yesterday to fill.") }
+                                            scope.launch { snackbarHostState.showSnackbar("No published lessons from previous day to fill.") }
                                         },
                                         onSuccess = {
-                                            scope.launch { snackbarHostState.showSnackbar("Auto-filled from yesterday.") }
+                                            scope.launch { snackbarHostState.showSnackbar("Auto-filled from previous day.") }
                                         }
                                     )
                                 },
@@ -131,12 +144,29 @@ fun ScheduleScreen(viewModel: ScheduleViewModel) {
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Auto-Fill from Yesterday's Schedule",
+                                    text = "Auto-Fill from Previous Day",
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Spacer(modifier = Modifier.height(16.dp))
+                        }
+
+                        if (lessons.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No lessons scheduled for this day.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
 
                         itemsIndexed(lessons, key = { _, lesson -> lesson.id ?: lesson.hashCode() }) { index, lesson ->
@@ -215,6 +245,69 @@ fun ScheduleScreen(viewModel: ScheduleViewModel) {
             }
         }
     }
+}
+
+@Composable
+fun DayTabs(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+    val days = remember(today) { (0..6).map { today.plus(it, DateTimeUnit.DAY) } }
+
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(days) { date ->
+            val isSelected = date == selectedDate
+            val label = when (date) {
+                today -> "Today"
+                today.plus(1, DateTimeUnit.DAY) -> "Tomorrow"
+                else -> date.dayOfWeek.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+            }
+
+            FilterChip(
+                selected = isSelected,
+                onClick = { onDateSelected(date) },
+                label = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(label)
+                        Text(
+                            text = date.dayOfMonth.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                border = null,
+                shape = RoundedCornerShape(12.dp)
+            )
+        }
+    }
+}
+
+private fun formatDateTitle(date: LocalDate): String {
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val tomorrow = today.plus(1, DateTimeUnit.DAY)
+    
+    val prefix = when (date) {
+        today -> "Today, "
+        tomorrow -> "Tomorrow, "
+        else -> "${date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }}, "
+    }
+    
+    val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+    return "$prefix$month ${date.dayOfMonth}"
 }
 
 @Composable
