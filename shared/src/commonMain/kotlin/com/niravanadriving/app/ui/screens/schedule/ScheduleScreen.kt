@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.niravanadriving.app.ui.components.ScheduleItemCard
+import com.niravanadriving.app.ui.navigation.AddEditLessonRoute
 import com.niravanadriving.app.ui.util.UiState
 import com.niravanadriving.app.ui.viewmodel.ScheduleViewModel
 import kotlinx.coroutines.launch
@@ -30,7 +31,11 @@ import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen(viewModel: ScheduleViewModel) {
+fun ScheduleScreen(
+    viewModel: ScheduleViewModel,
+    onAddLesson: () -> Unit,
+    onEditLesson: (String?) -> Unit
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lessons by viewModel.lessons.collectAsStateWithLifecycle()
     val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
@@ -39,6 +44,15 @@ fun ScheduleScreen(viewModel: ScheduleViewModel) {
     
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddLesson,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Lesson")
+            }
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -172,6 +186,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel) {
                         itemsIndexed(lessons, key = { _, lesson -> lesson.id ?: lesson.hashCode() }) { index, lesson ->
                             ScheduleItemCard(
                                 lesson = lesson,
+                                onClick = { onEditLesson(lesson.id) },
                                 onRemove = {
                                     viewModel.removeLesson(
                                         index = index,

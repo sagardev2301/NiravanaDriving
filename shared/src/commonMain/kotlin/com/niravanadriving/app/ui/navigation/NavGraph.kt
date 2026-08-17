@@ -24,10 +24,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.niravanadriving.app.ui.screens.home.HomeScreen
 import com.niravanadriving.app.ui.screens.learner.LearnerScreen
 import com.niravanadriving.app.ui.screens.login.LoginScreen
 import com.niravanadriving.app.ui.screens.profile.ProfileScreen
+import com.niravanadriving.app.ui.screens.schedule.AddEditLessonScreen
 import com.niravanadriving.app.ui.screens.schedule.ScheduleScreen
 import com.niravanadriving.app.ui.viewmodel.HomeViewModel
 import com.niravanadriving.app.ui.viewmodel.ScheduleViewModel
@@ -51,6 +53,9 @@ object ProfileRoute
 
 @Serializable
 object AddLearnerRoute
+
+@Serializable
+data class AddEditLessonRoute(val lessonId: String? = null)
 
 data class TopLevelDestination(
     val route: Any,
@@ -105,7 +110,11 @@ fun AppNavigation() {
                 HomeScreen(homeViewModel)
             }
             composable<ScheduleRoute> {
-                ScheduleScreen(scheduleViewModel)
+                ScheduleScreen(
+                    viewModel = scheduleViewModel,
+                    onAddLesson = { navController.navigate(AddEditLessonRoute(null)) },
+                    onEditLesson = { id -> navController.navigate(AddEditLessonRoute(id)) }
+                )
             }
             composable<LearnerRoute> {
                 LearnerScreen(learnerViewModel, onAddLearner = { navController.navigate(AddLearnerRoute) })
@@ -115,6 +124,14 @@ fun AppNavigation() {
             }
             composable<AddLearnerRoute> {
                 com.niravanadriving.app.ui.screens.learner.AddLearnerScreen(onBack = { navController.popBackStack() })
+            }
+            composable<AddEditLessonRoute> { backStackEntry ->
+                val route: AddEditLessonRoute = backStackEntry.toRoute()
+                AddEditLessonScreen(
+                    viewModel = scheduleViewModel,
+                    lessonId = route.lessonId,
+                    onDone = { navController.popBackStack() }
+                )
             }
         }
     }

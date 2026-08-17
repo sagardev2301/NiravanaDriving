@@ -217,4 +217,23 @@ object LessonRepository {
             false
         }
     }
+
+    suspend fun updateLesson(lesson: Lesson): Boolean {
+        return try {
+            supabase.postgrest["lessons"].update(
+                {
+                    Lesson::studentId setTo lesson.studentId
+                    Lesson::scheduledTime setTo lesson.scheduledTime
+                    Lesson::vehicleId setTo lesson.vehicleId
+                    Lesson::pickupLocation setTo lesson.pickupLocation
+                    Lesson::durationMinutes setTo lesson.durationMinutes
+                }
+            ) {
+                filter { eq("id", lesson.id!!) }
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

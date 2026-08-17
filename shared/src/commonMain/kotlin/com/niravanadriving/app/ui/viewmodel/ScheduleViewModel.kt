@@ -173,6 +173,36 @@ class ScheduleViewModel : ViewModel() {
         }
     }
 
+    fun addLesson(lesson: Lesson) {
+        val newLesson = lesson.copy(
+            id = null,
+            isDraft = true,
+            scheduledDate = _selectedDate.value.toString()
+        )
+        _lessons.value = _lessons.value + newLesson
+    }
+
+    fun updateLesson(lesson: Lesson, onResult: (Boolean) -> Unit) {
+        val id = lesson.id
+        if (id == null) {
+            onResult(false)
+            return
+        }
+
+        viewModelScope.launch {
+            val success = LessonRepository.updateLesson(lesson)
+            if (success) {
+                _lessons.value = _lessons.value.map {
+                    if (it.id == id) lesson else it
+                }
+            }
+            onResult(success)
+        }
+    }
+
+    fun getLessonById(id: String?): Lesson? =
+        _lessons.value.find { it.id == id }
+
     @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override fun onCleared() {
         lessonsChannel?.let {

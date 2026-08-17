@@ -2,6 +2,7 @@ package com.niravanadriving.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +25,7 @@ import com.niravanadriving.app.data.models.Lesson
 @Composable
 fun ScheduleItemCard(
     lesson: Lesson,
+    onClick: () -> Unit,
     onRemove: () -> Unit
 ) {
     val student = lesson.student
@@ -31,7 +33,8 @@ fun ScheduleItemCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -91,7 +94,8 @@ fun ScheduleItemCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     
                     Text(
-                        text = "(${lesson.notes})", // Using notes for "(1 hr)" etc
+                        text = lesson.notes?.takeIf { it.isNotBlank() }?.let { "($it)" }
+                            ?: "(${lesson.durationMinutes} min)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
