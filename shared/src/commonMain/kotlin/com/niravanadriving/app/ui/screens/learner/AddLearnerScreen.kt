@@ -18,40 +18,69 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.niravanadriving.app.data.models.*
-import com.niravanadriving.app.data.supabase
-import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.postgrest.postgrest
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.niravanadriving.app.ui.viewmodel.AddLearnerViewModel
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddLearnerScreen(onBack: () -> Unit) {
-    val scope = rememberCoroutineScope()
+fun AddLearnerScreen(
+    onBack: () -> Unit,
+    viewModel: AddLearnerViewModel = viewModel { AddLearnerViewModel() }
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Basic Info State
-    var fullName by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var emergencyContact by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    // Package Details State
-    var totalClasses by remember { mutableStateOf("15") }
-    var startDate by remember { mutableStateOf(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()) }
-    var pickupAddress by remember { mutableStateOf("") }
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
+            onBack()
+        }
+    }
 
-    // Financial Details State
-    var totalFee by remember { mutableStateOf("") }
-    var advanceReceived by remember { mutableStateOf("") }
-    var isPaymentReceivedToday by remember { mutableStateOf(true) }
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
 
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = Clock.System.now().toEpochMilliseconds()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = Instant.fromEpochMilliseconds(millis)
+                            .toLocalDateTime(TimeZone.currentSystemDefault())
+                            .date
+                        viewModel.onStartDateChange(date)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Add New Learner", fontWeight = FontWeight.Bold) },
@@ -75,7 +104,6 @@ fun AddLearnerScreen(onBack: () -> Unit) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("Basic Information", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 
-                // Photo Upload Placeholder
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -96,29 +124,36 @@ fun AddLearnerScreen(onBack: () -> Unit) {
                 }
 
                 OutlinedTextField(
-                    value = fullName,
-                    onValueChange = { fullName = it },
+                    value = state.fullName,
+                    onValueChange = { viewModel.onFullNameChange(it) },
                     label = { Text("Full Name") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    isError = state.fullNameError != null,
+                    supportingText = state.fullNameError?.let { { Text(it) } },
+                    singleLine = true
                 )
 
                 OutlinedTextField(
-                    value = phoneNumber,
-                    onValueChange = { phoneNumber = it },
+                    value = state.phoneNumber,
+                    onValueChange = { viewModel.onPhoneNumberChange(it) },
                     label = { Text("Phone Number") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    isError = state.phoneNumberError != null,
+                    supportingText = state.phoneNumberError?.let { { Text(it) } },
+                    singleLine = true
                 )
 
                 OutlinedTextField(
-                    value = emergencyContact,
-                    onValueChange = { emergencyContact = it },
-                    label = { Text("Emergency Contact") },
+                    value = state.emergencyContact,
+                    onValueChange = { viewModel.onEmergencyContactChange(it) },
+                    label = { Text("Emergency Contact (Optional)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    singleLine = true
                 )
             }
 
@@ -126,29 +161,67 @@ fun AddLearnerScreen(onBack: () -> Unit) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("Driving Package Details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
+                var expanded by remember { mutableStateOf(false) }
+                val options = listOf(7, 10, 15)
+                
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = state.totalClasses?.toString() ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Total Classes") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                        modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        isError = state.totalClassesError != null,
+                        supportingText = state.totalClassesError?.let { { Text(it) } }
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        options.forEach { selectionOption ->
+                            DropdownMenuItem(
+                                text = { Text(selectionOption.toString()) },
+                                onClick = {
+                                    viewModel.onTotalClassesChange(selectionOption)
+                                    expanded = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                            )
+                        }
+                    }
+                }
+
                 OutlinedTextField(
-                    value = totalClasses,
-                    onValueChange = { totalClasses = it },
-                    label = { Text("Total Classes") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
+                    value = state.startDate,
+                    onValueChange = {},
+                    label = { Text("Start Date") },
+                    modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
                     shape = RoundedCornerShape(8.dp),
-                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }
+                    trailingIcon = { 
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(Icons.Default.DateRange, null)
+                        }
+                    },
+                    readOnly = true,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
 
                 OutlinedTextField(
-                    value = startDate,
-                    onValueChange = { startDate = it },
-                    label = { Text("Start Date (yyyy-mm-dd)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    trailingIcon = { Icon(Icons.Default.DateRange, null) },
-                    readOnly = true
-                )
-
-                OutlinedTextField(
-                    value = pickupAddress,
-                    onValueChange = { pickupAddress = it },
+                    value = state.pickupAddress,
+                    onValueChange = { viewModel.onPickupAddressChange(it) },
                     label = { Text("Pickup Address") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
@@ -161,23 +234,25 @@ fun AddLearnerScreen(onBack: () -> Unit) {
                 Text("Financial Details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
                 OutlinedTextField(
-                    value = totalFee,
-                    onValueChange = { totalFee = it },
+                    value = state.totalFee,
+                    onValueChange = { viewModel.onTotalFeeChange(it) },
                     label = { Text("Total Package Fee") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     prefix = { Text("₹ ") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    singleLine = true
                 )
 
                 OutlinedTextField(
-                    value = advanceReceived,
-                    onValueChange = { advanceReceived = it },
+                    value = state.advanceReceived,
+                    onValueChange = { viewModel.onAdvanceReceivedChange(it) },
                     label = { Text("Advance Received") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     prefix = { Text("₹ ") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    singleLine = true
                 )
 
                 Row(
@@ -186,103 +261,19 @@ fun AddLearnerScreen(onBack: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Payment Received Today", style = MaterialTheme.typography.bodyMedium)
-                    Switch(checked = isPaymentReceivedToday, onCheckedChange = { isPaymentReceivedToday = it })
+                    Switch(checked = state.isPaymentReceivedToday, onCheckedChange = { viewModel.onPaymentReceivedTodayChange(it) })
                 }
             }
 
-            if (errorMessage != null) {
-                Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-
             Button(
-                onClick = {
-                    isLoading = true
-                    errorMessage = null
-                    scope.launch {
-                        try {
-                            val currentUserId = supabase.auth.currentUserOrNull()?.id
-                            if (currentUserId == null) {
-                                errorMessage = "User not authenticated"
-                                isLoading = false
-                                return@launch
-                            }
-
-                            // Fetch Instructor ID by auth_user_id
-                            val instructor = try {
-                                supabase.postgrest["instructors"]
-                                    .select {
-                                        filter {
-                                            eq("auth_user_id", currentUserId)
-                                        }
-                                    }
-                                    .decodeSingle<Instructor>()
-                            } catch (e: Exception) {
-                                // If not found, show error
-                                errorMessage = "Instructor profile not found"
-                                isLoading = false
-                                return@launch
-                            }
-                            
-                            val student = Student(
-                                instructorId = instructor.id,
-                                fullName = fullName,
-                                phone = phoneNumber,
-                                address = pickupAddress,
-                                totalSessions = totalClasses.toIntOrNull() ?: 15,
-                                feePerSession = (totalFee.toDoubleOrNull() ?: 0.0) / (totalClasses.toDoubleOrNull() ?: 15.0),
-                                instructorRemarks = "Emergency: $emergencyContact",
-                                isActive = true
-                            )
-
-                            // Save student and get the inserted object (including generated ID)
-                            val insertedStudent = try {
-                                supabase.postgrest["students"]
-                                    .insert(student) {
-                                        select()
-                                    }
-                                    .decodeSingle<Student>()
-                            } catch (e: Exception) {
-                                errorMessage = "Failed to create learner: ${e.message}"
-                                isLoading = false
-                                return@launch
-                            }
-                            
-                            // If advance received, record a payment
-                            val advance = advanceReceived.toDoubleOrNull() ?: 0.0
-                            if (advance > 0 && insertedStudent.id != null) {
-                                try {
-                                    val payment = Payment(
-                                        studentId = insertedStudent.id,
-                                        instructorId = instructor.id,
-                                        amount = advance,
-                                        paymentMethod = PaymentMethod.CASH, // Default to cash for now
-                                        status = PaymentStatus.PAID,
-                                        paidAt = Clock.System.now().toString(),
-                                        notes = "Initial Advance",
-                                        lessonId = null // This is the problematic field in your DB schema
-                                    )
-                                    supabase.postgrest["payments"].insert(payment)
-                                } catch (e: Exception) {
-                                    // We log this but allow the student creation to succeed
-                                    println("Warning: Could not save payment record: ${e.message}")
-                                }
-                            }
-                            
-                            isLoading = false
-                            onBack()
-                        } catch (e: Exception) {
-                            isLoading = false
-                            errorMessage = "Error: ${e.message}"
-                        }
-                    }
-                },
+                onClick = { viewModel.saveLearner() },
                 modifier = Modifier.fillMaxWidth(),
                 shape = CircleShape,
                 contentPadding = PaddingValues(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C22BD)),
-                enabled = !isLoading && fullName.isNotBlank() && phoneNumber.isNotBlank()
+                enabled = !state.isLoading
             ) {
-                if (isLoading) {
+                if (state.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
                 } else {
                     Text("Save & Create Learner", fontWeight = FontWeight.Bold)
