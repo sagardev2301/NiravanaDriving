@@ -85,7 +85,9 @@ class ScheduleViewModel : ViewModel() {
                 _lessons.value = LessonRepository.getLessonsForDate(instructor.id, _selectedDate.value)
                 _uiState.value = UiState.Success(Unit)
 
-                subscribeToRealtime(instructor.id)
+                if (lessonsChannel == null) {
+                    subscribeToRealtime(instructor.id)
+                }
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Error loading schedule")
             }
@@ -93,19 +95,22 @@ class ScheduleViewModel : ViewModel() {
     }
 
     private fun subscribeToRealtime(instructorId: String) {
+        if (lessonsChannel != null) return
+        
+        val channel = supabase.realtime.channel("schedule-changes-$instructorId")
+
+        channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "lessons"
+            filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
+        }.onEach {
+            loadData(isRefresh = true)
+        }.launchIn(viewModelScope)
+
         viewModelScope.launch {
-            lessonsChannel?.unsubscribe()
-            lessonsChannel = supabase.realtime.channel("schedule-changes-$instructorId")
-
-            lessonsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "lessons"
-                filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
-            }?.onEach {
-                loadData(isRefresh = true)
-            }?.launchIn(viewModelScope)
-
-            lessonsChannel?.subscribe()
+            channel.subscribe()
         }
+        
+        lessonsChannel = channel
     }
 
     fun autoFillFromPreviousDay(onNoLessons: () -> Unit, onSuccess: () -> Unit) {

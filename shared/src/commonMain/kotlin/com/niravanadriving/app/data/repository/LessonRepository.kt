@@ -117,9 +117,17 @@ object LessonRepository {
             if (lessons.isEmpty()) return true
             // Setting is_draft to true for all before upserting
             val drafts = lessons.map { it.copy(isDraft = true) }
-            supabase.postgrest["lessons"].upsert(drafts)
+            val (existing, new) = drafts.partition { it.id != null }
+
+            if (new.isNotEmpty()) {
+                supabase.postgrest["lessons"].insert(new)
+            }
+            if (existing.isNotEmpty()) {
+                supabase.postgrest["lessons"].upsert(existing)
+            }
             true
         } catch (e: Exception) {
+            println("saveDraftLessons failed: ${e.message}")
             false
         }
     }

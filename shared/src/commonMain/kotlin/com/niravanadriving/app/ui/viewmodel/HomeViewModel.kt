@@ -95,7 +95,9 @@ class HomeViewModel : ViewModel() {
                     )
                 )
                 
-                subscribeToRealtime(instructor.id)
+                if (lessonsChannel == null || sessionsChannel == null) {
+                    subscribeToRealtime(instructor.id)
+                }
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Unknown error occurred")
             }
@@ -103,31 +105,31 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun subscribeToRealtime(instructorId: String) {
+        if (lessonsChannel != null || sessionsChannel != null) return
+
+        val lessons = supabase.realtime.channel("lessons-changes-$instructorId")
+        val sessions = supabase.realtime.channel("sessions-changes-$instructorId")
+        
+        lessons.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "lessons"
+            filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
+        }.onEach {
+            loadData(isRefresh = true)
+        }.launchIn(viewModelScope)
+
+        sessions.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "lesson_sessions"
+        }.onEach { 
+            loadData(isRefresh = true)
+        }.launchIn(viewModelScope)
+
         viewModelScope.launch {
-            lessonsChannel?.unsubscribe()
-            lessonsChannel = supabase.realtime.channel("lessons-changes-$instructorId")
-            
-            lessonsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "lessons"
-                filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
-            }?.onEach { action ->
-                // Realtime actions usually don't include joined data.
-                // For KMP lessons which have student/vehicle, a refresh is safest 
-                // to maintain consistent UI state with joins.
-                loadData(isRefresh = true)
-            }?.launchIn(viewModelScope)
-
-            sessionsChannel?.unsubscribe()
-            sessionsChannel = supabase.realtime.channel("sessions-changes-$instructorId")
-            sessionsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "lesson_sessions"
-            }?.onEach { 
-                loadData(isRefresh = true)
-            }?.launchIn(viewModelScope)
-
-            lessonsChannel?.subscribe()
-            sessionsChannel?.subscribe()
+            lessons.subscribe()
+            sessions.subscribe()
         }
+
+        lessonsChannel = lessons
+        sessionsChannel = sessions
     }
 
     @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)

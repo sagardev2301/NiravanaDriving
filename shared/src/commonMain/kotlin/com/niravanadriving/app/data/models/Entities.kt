@@ -101,8 +101,8 @@ data class Lesson(
     @SerialName("vehicle_id") val vehicleId: String? = null,
     @SerialName("is_draft") val isDraft: Boolean = false,
     // Helper fields for UI (to be populated via Supabase Joins)
-    val student: Student? = null,
-    val vehicle: Vehicle? = null
+    @kotlinx.serialization.Transient val student: Student? = null,
+    @kotlinx.serialization.Transient val vehicle: Vehicle? = null
 )
 
 @Serializable

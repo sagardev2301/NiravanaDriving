@@ -57,7 +57,9 @@ class LearnerViewModel : ViewModel() {
                 val students = StudentRepository.getAllStudents(instructor.id)
                 _uiState.value = UiState.Success(students)
 
-                subscribeToRealtime(instructor.id)
+                if (studentsChannel == null || paymentsChannel == null) {
+                    subscribeToRealtime(instructor.id)
+                }
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Error loading learners")
             }
@@ -65,29 +67,32 @@ class LearnerViewModel : ViewModel() {
     }
 
     private fun subscribeToRealtime(instructorId: String) {
+        if (studentsChannel != null || paymentsChannel != null) return
+
+        val students = supabase.realtime.channel("students-changes-$instructorId")
+        val payments = supabase.realtime.channel("payments-changes-$instructorId")
+
+        students.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "students"
+            filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
+        }.onEach {
+            loadData(isRefresh = true)
+        }.launchIn(viewModelScope)
+
+        payments.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "payments"
+            filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
+        }.onEach {
+            loadData(isRefresh = true)
+        }.launchIn(viewModelScope)
+
         viewModelScope.launch {
-            studentsChannel?.unsubscribe()
-            studentsChannel = supabase.realtime.channel("students-changes-$instructorId")
-
-            studentsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "students"
-                filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
-            }?.onEach {
-                loadData(isRefresh = true)
-            }?.launchIn(viewModelScope)
-
-            paymentsChannel?.unsubscribe()
-            paymentsChannel = supabase.realtime.channel("payments-changes-$instructorId")
-            paymentsChannel?.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "payments"
-                filter(column = "instructor_id", operator = FilterOperator.EQ, value = instructorId)
-            }?.onEach {
-                loadData(isRefresh = true)
-            }?.launchIn(viewModelScope)
-
-            studentsChannel?.subscribe()
-            paymentsChannel?.subscribe()
+            students.subscribe()
+            payments.subscribe()
         }
+
+        studentsChannel = students
+        paymentsChannel = payments
     }
 
     @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
